@@ -52,7 +52,10 @@ export async function notifierManagerRapport(rapportId: string): Promise<void> {
       .maybeSingle();
     managerEmail = m?.email ?? null;
   }
-  if (!managerEmail) return;
+  if (!managerEmail) {
+    console.warn(`[email] aucun manager trouvé pour l'entreprise ${r.entreprise_id}`);
+    return;
+  }
 
   await envoyerEmail({
     to: managerEmail,

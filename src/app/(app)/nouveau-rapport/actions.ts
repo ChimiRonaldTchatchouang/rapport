@@ -85,15 +85,18 @@ export async function soumettreRapport(formData: FormData) {
   // Analyse IA du rapport (best-effort : ne bloque pas la soumission).
   try {
     await analyserEtEnregistrerRapport(rapport.id);
-  } catch {
-    // Ignoré : l'analyse pourra être relancée manuellement par le manager.
+  } catch (e) {
+    // Ne bloque pas la soumission ; l'erreur est tracée pour diagnostic.
+    console.error("[ia] analyse du rapport échouée:", e);
   }
 
   // Notification email au manager (best-effort : n'échoue pas la soumission).
   try {
     await notifierManagerRapport(rapport.id);
-  } catch {
-    // Ignoré volontairement : l'email ne doit pas bloquer la soumission.
+  } catch (e) {
+    // L'email ne doit pas bloquer la soumission, mais on trace la raison
+    // (ex. RESEND_API_KEY manquant, domaine non vérifié…) dans les logs.
+    console.error("[email] notification manager échouée:", e);
   }
 
   redirect("/mes-rapports?message=" + encodeURIComponent("Rapport soumis avec succès ✓"));

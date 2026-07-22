@@ -65,15 +65,19 @@ export default async function RapportsManagerPage({
         }
       />
 
-      <form className="mb-6 flex items-center gap-2">
-        <span className="muted text-sm">Employé :</span>
-        <Select name="employe" defaultValue={employe ?? ""} className="max-w-xs">
-          <option value="">Tous</option>
-          {employes.map((e) => (
-            <option key={e.id} value={e.id}>{e.nom}</option>
-          ))}
-        </Select>
-        <Button variant="secondary" size="sm" type="submit">Filtrer</Button>
+      <form className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div className="sm:w-64">
+          <label className="muted mb-1 block text-xs font-medium">Employé</label>
+          <Select name="employe" defaultValue={employe ?? ""}>
+            <option value="">Tous</option>
+            {employes.map((e) => (
+              <option key={e.id} value={e.id}>{e.nom}</option>
+            ))}
+          </Select>
+        </div>
+        <Button variant="secondary" size="sm" type="submit" className="w-full sm:w-auto">
+          Filtrer
+        </Button>
       </form>
 
       {rapports.length === 0 ? (

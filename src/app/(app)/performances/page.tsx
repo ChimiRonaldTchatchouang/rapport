@@ -175,30 +175,34 @@ export default async function PerformancesPage({
       )}
 
       {/* Filtres : rôle + plage de dates (impactent les graphes) */}
-      <form className="card mb-6 flex flex-wrap items-end gap-3 p-4">
-        <div>
+      <form className="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-end">
+        <div className="sm:w-44">
           <label className="muted mb-1 block text-xs font-medium">Rôle métier</label>
-          <Select name="role" defaultValue={roleFiltre ?? ""} className="min-w-40">
+          <Select name="role" defaultValue={roleFiltre ?? ""}>
             <option value="">Tous les rôles</option>
             {roles.map((r) => (
               <option key={r.id} value={r.id}>{r.nom}</option>
             ))}
           </Select>
         </div>
-        <div>
+        <div className="sm:w-40">
           <label className="muted mb-1 block text-xs font-medium">Du</label>
           <Input name="debut" type="date" defaultValue={debut ?? ""} />
         </div>
-        <div>
+        <div className="sm:w-40">
           <label className="muted mb-1 block text-xs font-medium">Au</label>
           <Input name="fin" type="date" defaultValue={fin ?? ""} />
         </div>
-        <Button variant="primary" size="sm" type="submit">Appliquer les filtres</Button>
-        {(debut || fin || roleFiltre) && (
-          <a href="/performances" className="self-center text-sm text-brand-600 hover:underline">
-            Réinitialiser
-          </a>
-        )}
+        <div className="flex items-center gap-3">
+          <Button variant="primary" size="sm" type="submit" className="w-full sm:w-auto">
+            Appliquer
+          </Button>
+          {(debut || fin || roleFiltre) && (
+            <a href="/performances" className="whitespace-nowrap text-sm text-brand-600 hover:underline">
+              Réinitialiser
+            </a>
+          )}
+        </div>
       </form>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">

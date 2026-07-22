@@ -112,11 +112,11 @@ export function AppShell({
     <div className="min-h-screen">
       {/* Sidebar desktop */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col justify-between border-r border-[var(--border)] bg-[var(--surface)] p-4 lg:flex">
-        <div className="flex flex-col gap-8">
+        <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
           {Brand}
           {NavList}
         </div>
-        {UserCard}
+        <div className="pt-4">{UserCard}</div>
       </aside>
 
       {/* Topbar mobile */}
@@ -137,8 +137,8 @@ export function AppShell({
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-72 flex-col justify-between bg-[var(--surface)] p-4">
-            <div className="flex flex-col gap-8">
+          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col justify-between bg-[var(--surface)] p-4">
+            <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
               <div className="flex items-center justify-between">
                 {Brand}
                 <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-white/5" aria-label="Fermer">
@@ -147,7 +147,7 @@ export function AppShell({
               </div>
               {NavList}
             </div>
-            {UserCard}
+            <div className="pt-4">{UserCard}</div>
           </aside>
         </div>
       )}

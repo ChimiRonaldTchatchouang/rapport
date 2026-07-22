@@ -101,7 +101,7 @@ export default async function EquipePage({
                     <div className="flex flex-wrap items-center gap-2">
                       <form action={reassignerRole} className="flex items-center gap-1">
                         <input type="hidden" name="employe_id" value={e.id} />
-                        <Select name="role_metier_id" defaultValue={e.role_metier_id ?? ""} className="py-1.5 text-xs">
+                        <Select name="role_metier_id" defaultValue={e.role_metier_id ?? ""} className="w-36 py-1.5 text-xs">
                           <option value="">Sans rôle</option>
                           {roles.map((r) => (
                             <option key={r.id} value={r.id}>{r.nom}</option>
