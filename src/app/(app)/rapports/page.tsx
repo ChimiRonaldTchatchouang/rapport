@@ -97,7 +97,7 @@ export default async function RapportsManagerPage({
                   {r.source === "email" && <Badge tone="info">Email</Badge>}
                   {r.similaire_precedent && <Badge tone="warning">Similaire</Badge>}
                   <a
-                    href={`/impression/rapport/${r.id}`}
+                    href={`/api/rapport/${r.id}/pdf`}
                     target="_blank"
                     className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5"
                     title="PDF enrichi"

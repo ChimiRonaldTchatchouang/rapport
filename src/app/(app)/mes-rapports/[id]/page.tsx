@@ -37,7 +37,7 @@ export default async function MonRapportPage({
             <Link href="/mes-rapports">
               <Button variant="ghost" size="sm">← Retour</Button>
             </Link>
-            <ButtonLink href={`/impression/rapport/${rapport.id}`} target="_blank" variant="secondary" size="sm">
+            <ButtonLink href={`/api/rapport/${rapport.id}/pdf`} target="_blank" variant="secondary" size="sm">
               <Icon.download width={16} /> PDF
             </ButtonLink>
           </div>

@@ -5,8 +5,9 @@ import "server-only";
 // Utilise le client ADMIN car il faut lire l'email du manager (hors RLS employé).
 // ============================================================================
 import { createAdminClient } from "@/lib/supabase/admin";
-import { envoyerEmail } from "@/lib/email/resend";
+import { envoyerEmail, type EmailAttachment } from "@/lib/email/resend";
 import { emailRapportHtml, objetEmail } from "@/lib/rapports/format";
+import { genererPdfRapport } from "@/lib/pdf/generer";
 import type { Rapport, ValeurChamp } from "@/lib/types/rapport";
 
 /**
@@ -28,7 +29,11 @@ export async function notifierManagerRapport(rapportId: string): Promise<void> {
 
   const [{ data: employe }, { data: entreprise }] = await Promise.all([
     admin.from("utilisateurs").select("nom, email, manager_id").eq("id", r.employe_id).single(),
-    admin.from("entreprises").select("nom, logo_url").eq("id", r.entreprise_id).single(),
+    admin
+      .from("entreprises")
+      .select("nom, logo_url, contact_email, contact_tel, adresse")
+      .eq("id", r.entreprise_id)
+      .single(),
   ]);
   if (!employe || !entreprise) return;
 
@@ -57,6 +62,20 @@ export async function notifierManagerRapport(rapportId: string): Promise<void> {
     return;
   }
 
+  // Génère le PDF du rapport en pièce jointe (best-effort).
+  let attachments: EmailAttachment[] | undefined;
+  try {
+    const pdf = await genererPdfRapport({
+      rapport: { template_nom: r.template_nom, contenu: r.contenu as ValeurChamp[], soumis_at: r.soumis_at },
+      employe,
+      entreprise,
+    });
+    const nomFichier = `rapport-${employe.nom.replace(/\s+/g, "-")}-${r.soumis_at.slice(0, 10)}.pdf`;
+    attachments = [{ filename: nomFichier, content: Buffer.from(pdf).toString("base64") }];
+  } catch (e) {
+    console.error("[pdf] génération de la pièce jointe échouée:", e);
+  }
+
   await envoyerEmail({
     to: managerEmail,
     subject: objetEmail(employe.nom, r.soumis_at),
@@ -70,5 +89,6 @@ export async function notifierManagerRapport(rapportId: string): Promise<void> {
         source: r.source,
       },
     }),
+    attachments,
   });
 }
