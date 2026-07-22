@@ -41,6 +41,17 @@ export interface Utilisateur {
   updated_at: string;
 }
 
+export interface Objectif {
+  id: string;
+  entreprise_id: string;
+  role_metier_id: string | null;
+  periode_debut: string;
+  contenu: string;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Licence {
   id: string;
   cle_unique: string;

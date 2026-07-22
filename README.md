@@ -128,8 +128,11 @@ Les migrations :
   rapports (JSONB), notes de performance.
 - `0004_modules_1_to_5_rls.sql` — RLS des rapports/notes (super admin sans accès
   au contenu) et de la configuration (manager).
+- `0005_analyse_par_rapport.sql` — analyse IA par rapport (note/avis/observations).
+- `0006_objectifs.sql` — objectifs hebdomadaires du manager + RLS.
 
-Appliquez les 4 fichiers dans l'ordre.
+Appliquez les 6 fichiers dans l'ordre — ou collez le fichier tout-en-un
+`supabase/setup.sql` (concaténation des 6, à exécuter une fois sur une base neuve).
 
 ### 3. Créer le premier Super Admin (bootstrap)
 

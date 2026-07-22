@@ -39,12 +39,19 @@ function serialiserRapports(rapports: Rapport[]): string {
     .join("\n\n");
 }
 
+function blocObjectifs(objectifs?: string | null): string {
+  return objectifs
+    ? `\nObjectifs fixés par le manager pour cette période :\n${objectifs}\nÉvalue les résultats au regard de ces objectifs.\n`
+    : "";
+}
+
 function construirePrompt(
   nomEmploye: string,
   roleMetier: string,
   periode: string,
   nbJoursOuvres: number,
-  rapports: Rapport[]
+  rapports: Rapport[],
+  objectifs?: string | null
 ): string {
   return `Tu es un analyste RH qui évalue la performance d'un employé à partir de ses rapports d'activité.
 
@@ -54,6 +61,7 @@ Période analysée : ${periode}
 Nombre de rapports soumis : ${rapports.length} sur ${nbJoursOuvres} jours ouvrés attendus.
 
 ${CRITERES}
+${blocObjectifs(objectifs)}
 
 Rapports de la période :
 ${serialiserRapports(rapports)}
@@ -77,6 +85,7 @@ export async function analyserPerformance(params: {
   periode: string;
   nbJoursOuvres: number;
   rapports: Rapport[];
+  objectifs?: string | null;
 }): Promise<ResultatAnalyse> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY manquante.");
@@ -86,7 +95,8 @@ export async function analyserPerformance(params: {
     params.roleMetier,
     params.periode,
     params.nbJoursOuvres,
-    params.rapports
+    params.rapports,
+    params.objectifs
   );
 
   const res = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
@@ -168,11 +178,33 @@ async function appelerGemini(prompt: string): Promise<string> {
   return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
+// Appel Gemini en mode TEXTE libre (assistant conversationnel du manager).
+export async function genererTexte(prompt: string): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY manquante.");
+
+  const res = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.6 },
+    }),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Erreur Gemini (${res.status}) : ${detail.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
+
 export async function analyserRapport(params: {
   nomEmploye: string;
   roleMetier: string;
   dateRapport: string;
   rapport: Rapport;
+  objectifs?: string | null;
 }): Promise<AvisRapport> {
   const lignes = (params.rapport.contenu as ValeurChamp[])
     .map((c) => `  - ${c.label} : ${valeurLisible(c)}`)
@@ -185,6 +217,7 @@ Rôle : ${params.roleMetier}
 Date du rapport : ${params.dateRapport}
 
 ${CRITERES}
+${blocObjectifs(params.objectifs)}
 
 Contenu du rapport :
 ${lignes}

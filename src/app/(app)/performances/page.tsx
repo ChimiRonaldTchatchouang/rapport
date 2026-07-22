@@ -5,14 +5,14 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { StatCard } from "@/components/ui/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/field";
+import { Select, Input } from "@/components/ui/field";
 import { EmptyState } from "@/components/ui/empty";
 import { Icon } from "@/components/icons";
 import { LineChart, type LinePoint } from "@/components/charts/line-chart";
 import { Sparkline } from "@/components/charts/sparkline";
 import { CriteresCard } from "@/components/ia/criteres-card";
 import { AvisRapportBloc } from "@/components/ia/avis-rapport";
-import { dernieresSemaines, semaine, isoDate } from "@/lib/data/periodes";
+import { dernieresSemaines, semainesEntre, semaine, isoDate } from "@/lib/data/periodes";
 import { formatDateHeure } from "@/lib/utils";
 import type { RoleMetier } from "@/lib/types/database";
 import type { NotePerformance, Rapport } from "@/lib/types/rapport";
@@ -28,14 +28,17 @@ type EmployeRow = {
 export default async function PerformancesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ role?: string; message?: string; error?: string }>;
+  searchParams: Promise<{ role?: string; debut?: string; fin?: string; message?: string; error?: string }>;
 }) {
-  const { role: roleFiltre, message, error } = await searchParams;
+  const { role: roleFiltre, debut, fin, message, error } = await searchParams;
   const user = await requireRole("manager");
   const supabase = await createClient();
   const entrepriseId = user.entreprise_id!;
 
-  const semaines = dernieresSemaines(8);
+  // Plage de semaines : pilotée par le filtre de dates, sinon 8 dernières.
+  const semaines =
+    debut && fin ? semainesEntre(new Date(debut), new Date(fin)) : dernieresSemaines(8);
+  const nbSemaines = semaines.length;
   const debutFenetre = isoDate(semaines[0].debut);
 
   const [{ data: employesData }, { data: notesData }, { data: rapportsData }, { data: rolesData }] =
@@ -109,13 +112,15 @@ export default async function PerformancesPage({
     ? Math.round(([...idsFiltre].filter((id) => ontSoumis.has(id)).length / employes.length) * 100)
     : 0;
   const regulariteMoyenne = employes.length
-    ? Math.round((employes.reduce((a, e) => a + semainesActives(e.id), 0) / (employes.length * 8)) * 100)
+    ? Math.round((employes.reduce((a, e) => a + semainesActives(e.id), 0) / (employes.length * nbSemaines)) * 100)
     : 0;
 
-  // Détail par employé.
+  // Détail par employé (notes limitées à la plage de dates sélectionnée).
   const detail = employes
     .map((e) => {
-      const sesNotes = notesFiltre.filter((n) => n.employe_id === e.id);
+      const sesNotes = notesFiltre.filter(
+        (n) => n.employe_id === e.id && debutsSemaines.includes(n.periode_debut)
+      );
       const derniere = sesNotes.at(-1) ?? null;
       const precedente = sesNotes.at(-2) ?? null;
       const tendance =
@@ -124,8 +129,8 @@ export default async function PerformancesPage({
         ...e,
         derniere,
         tendance,
-        trend: sesNotes.slice(-8).map((n) => n.note),
-        regularite: Math.round((semainesActives(e.id) / 8) * 100),
+        trend: sesNotes.slice(-12).map((n) => n.note),
+        regularite: Math.round((semainesActives(e.id) / nbSemaines) * 100),
         aSoumis: ontSoumis.has(e.id),
       };
     })
@@ -169,23 +174,38 @@ export default async function PerformancesPage({
         <p className="mb-4 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>
       )}
 
-      {/* Filtre par rôle */}
-      <form className="mb-6 flex items-center gap-2">
-        <span className="muted text-sm">Filtrer :</span>
-        <Select name="role" defaultValue={roleFiltre ?? ""} className="max-w-xs">
-          <option value="">Tous les rôles</option>
-          {roles.map((r) => (
-            <option key={r.id} value={r.id}>{r.nom}</option>
-          ))}
-        </Select>
-        <Button variant="secondary" size="sm" type="submit">Appliquer</Button>
+      {/* Filtres : rôle + plage de dates (impactent les graphes) */}
+      <form className="card mb-6 flex flex-wrap items-end gap-3 p-4">
+        <div>
+          <label className="muted mb-1 block text-xs font-medium">Rôle métier</label>
+          <Select name="role" defaultValue={roleFiltre ?? ""} className="min-w-40">
+            <option value="">Tous les rôles</option>
+            {roles.map((r) => (
+              <option key={r.id} value={r.id}>{r.nom}</option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <label className="muted mb-1 block text-xs font-medium">Du</label>
+          <Input name="debut" type="date" defaultValue={debut ?? ""} />
+        </div>
+        <div>
+          <label className="muted mb-1 block text-xs font-medium">Au</label>
+          <Input name="fin" type="date" defaultValue={fin ?? ""} />
+        </div>
+        <Button variant="primary" size="sm" type="submit">Appliquer les filtres</Button>
+        {(debut || fin || roleFiltre) && (
+          <a href="/performances" className="self-center text-sm text-brand-600 hover:underline">
+            Réinitialiser
+          </a>
+        )}
       </form>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Note moyenne" value={noteMoyenne || "—"} highlight icon={<Icon.chart width={18} />} />
         <StatCard label="Employés" value={employes.length} icon={<Icon.users width={18} />} />
         <StatCard label="Complétude (sem.)" value={`${completude}%`} icon={<Icon.check width={18} />} />
-        <StatCard label="Régularité (8 sem.)" value={`${regulariteMoyenne}%`} icon={<Icon.doc width={18} />} />
+        <StatCard label={`Régularité (${nbSemaines} sem.)`} value={`${regulariteMoyenne}%`} icon={<Icon.doc width={18} />} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

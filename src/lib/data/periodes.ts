@@ -61,6 +61,20 @@ export function dernieresSemaines(n: number, ref = new Date()): Periode[] {
   return out;
 }
 
+// Semaines couvrant l'intervalle [debut, fin] (bornes incluses), plafonnées.
+export function semainesEntre(debut: Date, fin: Date, max = 26): Periode[] {
+  const out: Periode[] = [];
+  let d = debutSemaine(debut);
+  const stop = debutSemaine(fin);
+  while (d <= stop && out.length < max) {
+    out.push(semaine(d));
+    const suivant = new Date(d);
+    suivant.setUTCDate(suivant.getUTCDate() + 7);
+    d = suivant;
+  }
+  return out.length ? out : [semaine(fin)];
+}
+
 // Nombre approximatif de jours ouvrés (lun-ven) dans une période.
 export function joursOuvres(debut: Date, fin: Date): number {
   let count = 0;

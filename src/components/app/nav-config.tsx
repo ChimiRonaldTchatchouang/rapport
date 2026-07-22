@@ -31,6 +31,7 @@ export function navForRole(role: RoleSysteme): NavSection[] {
           { href: "/dashboard", label: "Tableau de bord", icon: Icon.grid },
           { href: "/performances", label: "Performances", icon: Icon.chart },
           { href: "/rapports", label: "Rapports", icon: Icon.doc },
+          { href: "/objectifs", label: "Objectifs", icon: Icon.check },
         ],
       },
       {

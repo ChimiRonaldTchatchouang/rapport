@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { navForRole } from "@/components/app/nav-config";
+import { ChatWidget } from "@/components/ia/chat-widget";
 import { signOut } from "@/app/login/actions";
 import { cn } from "@/lib/utils";
 import type { RoleSysteme } from "@/lib/types/database";
@@ -160,6 +161,9 @@ export function AppShell({
           {children}
         </div>
       </main>
+
+      {/* Assistant IA flottant — réservé au manager */}
+      {role === "manager" && <ChatWidget />}
     </div>
   );
 }
