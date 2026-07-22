@@ -10,7 +10,7 @@ performance par IA (Gemini) et vente par **licence d'activation annuelle**.
 |---|---|
 | Framework | Next.js 15 (App Router) + TypeScript |
 | Base de données + Auth | Supabase (Postgres + Auth + Row Level Security) |
-| Hébergement | Vercel |
+| Hébergement | Render (Web Service Node) |
 | Analyse IA | API Google Gemini *(Module 5)* |
 | Emails | Resend *(Module 10)* |
 | Styles | Tailwind CSS v4 |
@@ -162,6 +162,39 @@ L'app tourne sur http://localhost:3000.
 | `npm run build` | Build de production |
 | `npm run start` | Serveur de production |
 | `npm run typecheck` | Vérification TypeScript |
+
+## Déploiement sur Render
+
+Le dépôt contient un Blueprint `render.yaml` (Web Service Node, région Frankfurt).
+
+1. **Render → New → Blueprint**, sélectionnez ce dépôt. Render lit `render.yaml`.
+   - Build : `npm ci && npm run build` · Start : `npm run start`
+   - Node 22 (via `NODE_VERSION` et `.node-version`). Le port est fourni par
+     Render (`$PORT`) et pris en charge automatiquement par `next start`.
+2. **Variables d'environnement** (onglet Environment du service). ⚠️ Les
+   `NEXT_PUBLIC_*` sont inlinées au **build** : définissez-les AVANT le premier
+   déploiement, sinon relancez un déploiement après les avoir ajoutées.
+   - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY` (clé `sb_secret_…`)
+   - `GEMINI_API_KEY`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `RESEND_WEBHOOK_SECRET`
+   - `CRON_SECRET`
+   - `NEXT_PUBLIC_APP_URL` = l'URL publique Render (ex. `https://rapport.onrender.com`)
+3. Appliquez les migrations Supabase (voir plus haut) et créez le Super Admin.
+
+> Le plan **free** de Render met le service en veille après inactivité
+> (premier accès plus lent). `vercel.json` n'est utilisé que si vous déployez
+> sur Vercel — Render l'ignore.
+
+### CRON de l'analyse IA sur Render
+
+`/api/cron/analyses` attend `Authorization: Bearer $CRON_SECRET` (ou `?token=`).
+Deux options :
+
+- **Render Cron Job** (plan payant) : créez un Cron Job qui exécute
+  `curl -fsS -H "Authorization: Bearer $CRON_SECRET" "$NEXT_PUBLIC_APP_URL/api/cron/analyses?type=hebdomadaire"`
+  (planning `0 6 * * 1`), et un second `type=mensuel` (`0 6 1 * *`).
+- **Cron externe gratuit** (ex. cron-job.org) : appelez la même URL avec le
+  header d'autorisation, aux mêmes fréquences.
 
 ## Sécurité
 

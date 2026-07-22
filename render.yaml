@@ -1,0 +1,44 @@
+# ============================================================================
+# Blueprint Render — Plateforme Rapports (Next.js)
+# Déploiement : Render > New > Blueprint > pointer sur ce dépôt.
+# Renseignez ensuite les variables marquées `sync: false` dans le dashboard.
+#
+# ⚠️ Les variables NEXT_PUBLIC_* sont lues au moment du BUILD (inlinées dans le
+#    bundle) : elles doivent être définies AVANT le premier déploiement.
+# ============================================================================
+services:
+  - type: web
+    name: rapport
+    runtime: node
+    plan: free
+    # Région au plus près de votre base Supabase (ex. frankfurt pour l'UE).
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # --- Supabase (NEXT_PUBLIC_* requis au build) ---
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      # --- IA / Emails ---
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: RESEND_WEBHOOK_SECRET
+        sync: false
+      # --- CRON (analyse IA planifiée) ---
+      - key: CRON_SECRET
+        sync: false
+      # --- App ---
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false
