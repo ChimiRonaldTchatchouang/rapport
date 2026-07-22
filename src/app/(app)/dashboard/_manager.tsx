@@ -6,7 +6,9 @@ import { ButtonLink } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/icons";
 import { LineChart, type LinePoint } from "@/components/charts/line-chart";
+import { AvisRapportBloc } from "@/components/ia/avis-rapport";
 import { dernieresSemaines, semaine, isoDate } from "@/lib/data/periodes";
+import { formatDateHeure } from "@/lib/utils";
 import type { Utilisateur } from "@/lib/types/database";
 import type { NotePerformance, Rapport } from "@/lib/types/rapport";
 
@@ -37,6 +39,19 @@ export async function ManagerDashboard({ user }: { user: Utilisateur }) {
   const employes = (employesData as { id: string; nom: string; actif: boolean }[]) ?? [];
   const notes = (notesData as NotePerformance[]) ?? [];
   const rapportsSemaine = (rapportsData as Pick<Rapport, "id" | "employe_id" | "soumis_at">[]) ?? [];
+
+  // Avis IA récents (analyse par rapport).
+  const { data: avisData } = await supabase
+    .from("rapports")
+    .select("id, template_nom, soumis_at, note, avis, observations, utilisateurs(nom)")
+    .eq("entreprise_id", entrepriseId)
+    .not("analyse_at", "is", null)
+    .order("soumis_at", { ascending: false })
+    .limit(4);
+  const avisRecents =
+    (avisData as unknown as (Pick<Rapport, "id" | "template_nom" | "soumis_at" | "note" | "avis" | "observations"> & {
+      utilisateurs: { nom: string } | null;
+    })[]) ?? [];
 
   const employesActifs = employes.filter((e) => e.actif);
   const ontSoumis = new Set(rapportsSemaine.map((r) => r.employe_id));
@@ -109,6 +124,31 @@ export async function ManagerDashboard({ user }: { user: Utilisateur }) {
           )}
         </Card>
       </div>
+
+      {avisRecents.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader
+            title="Avis récents de l'IA"
+            subtitle="Analyse individuelle des derniers rapports"
+            action={
+              <ButtonLink href="/performances" variant="ghost" size="sm">
+                Tout voir
+              </ButtonLink>
+            }
+          />
+          <div className="grid gap-3 sm:grid-cols-2">
+            {avisRecents.map((r) => (
+              <div key={r.id}>
+                <p className="mb-1 text-sm font-medium">
+                  {r.utilisateurs?.nom ?? "—"}
+                  <span className="muted font-normal"> · {formatDateHeure(r.soumis_at)}</span>
+                </p>
+                <AvisRapportBloc note={r.note} avis={r.avis} observations={r.observations ?? []} compact />
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <Card className="mt-6">
         <CardHeader title="Classement des employés" subtitle="Dernière note de performance" />

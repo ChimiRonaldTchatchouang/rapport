@@ -58,6 +58,11 @@ export interface Rapport {
   similaire_precedent: boolean;
   soumis_at: string;
   created_at: string;
+  // Analyse IA par rapport (Module 5 — granularité journalière)
+  note: number | null;
+  avis: string | null;
+  observations: string[];
+  analyse_at: string | null;
 }
 
 export interface NotePerformance {

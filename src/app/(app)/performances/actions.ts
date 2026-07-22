@@ -4,8 +4,8 @@
 // hebdomadaire ou mensuelle. Un CRON pourra appeler la même logique (voir README).
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/permissions";
-import { genererNotesEntreprise } from "@/lib/ia/generation";
-import { semaine, mois } from "@/lib/data/periodes";
+import { genererNotesEntreprise, analyserRapportsEnAttente } from "@/lib/ia/generation";
+import { semaine, mois, isoDate } from "@/lib/data/periodes";
 
 export async function lancerAnalyse(formData: FormData) {
   const manager = await requireRole("manager");
@@ -23,6 +23,27 @@ export async function lancerAnalyse(formData: FormData) {
     "/performances?message=" +
       encodeURIComponent(
         `Analyse ${type} terminée : ${resume.analyses} noté(s), ${resume.ignores} sans rapport, ${resume.erreurs} erreur(s).`
+      )
+  );
+}
+
+// Analyse individuelle des rapports non encore analysés (par défaut : aujourd'hui).
+export async function analyserRapportsDuJour(formData: FormData) {
+  const manager = await requireRole("manager");
+  const tout = formData.get("tout") === "1";
+  const jour = tout ? undefined : isoDate(new Date());
+
+  let resume;
+  try {
+    resume = await analyserRapportsEnAttente(manager.entreprise_id!, jour);
+  } catch {
+    redirect("/performances?error=" + encodeURIComponent("Analyse impossible (clé Gemini configurée ?)."));
+  }
+
+  redirect(
+    "/performances?message=" +
+      encodeURIComponent(
+        `${resume.analyses} rapport(s) analysé(s)${resume.erreurs ? `, ${resume.erreurs} erreur(s)` : ""}.`
       )
   );
 }

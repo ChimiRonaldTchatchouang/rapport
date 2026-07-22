@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Icon } from "@/components/icons";
 import { RapportView } from "@/components/rapport/rapport-view";
+import { AvisRapportBloc } from "@/components/ia/avis-rapport";
 import type { Rapport, ValeurChamp } from "@/lib/types/rapport";
 
 export default async function RapportManagerDetail({
@@ -42,15 +43,22 @@ export default async function RapportManagerDetail({
           </div>
         }
       />
-      <Card className="mx-auto max-w-2xl">
-        <RapportView
-          templateNom={rapport.template_nom}
-          contenu={rapport.contenu as ValeurChamp[]}
-          soumisAt={rapport.soumis_at}
-          source={rapport.source}
-          auteur={rapport.utilisateurs?.nom}
+      <div className="mx-auto max-w-2xl space-y-4">
+        <Card>
+          <RapportView
+            templateNom={rapport.template_nom}
+            contenu={rapport.contenu as ValeurChamp[]}
+            soumisAt={rapport.soumis_at}
+            source={rapport.source}
+            auteur={rapport.utilisateurs?.nom}
+          />
+        </Card>
+        <AvisRapportBloc
+          note={rapport.note}
+          avis={rapport.avis}
+          observations={rapport.observations ?? []}
         />
-      </Card>
+      </div>
     </>
   );
 }

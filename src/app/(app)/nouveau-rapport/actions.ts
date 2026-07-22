@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/permissions";
 import { estTropSimilaire } from "@/lib/rapports/similarity";
 import { notifierManagerRapport } from "@/lib/email/notifications";
+import { analyserEtEnregistrerRapport } from "@/lib/ia/generation";
 import type { ChampTemplate, ValeurChamp } from "@/lib/types/rapport";
 
 export async function soumettreRapport(formData: FormData) {
@@ -79,6 +80,13 @@ export async function soumettreRapport(formData: FormData) {
 
   if (error || !rapport) {
     redirect("/nouveau-rapport?error=" + encodeURIComponent("Échec de l'enregistrement."));
+  }
+
+  // Analyse IA du rapport (best-effort : ne bloque pas la soumission).
+  try {
+    await analyserEtEnregistrerRapport(rapport.id);
+  } catch {
+    // Ignoré : l'analyse pourra être relancée manuellement par le manager.
   }
 
   // Notification email au manager (best-effort : n'échoue pas la soumission).

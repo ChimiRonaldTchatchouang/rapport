@@ -10,10 +10,13 @@ import { EmptyState } from "@/components/ui/empty";
 import { Icon } from "@/components/icons";
 import { LineChart, type LinePoint } from "@/components/charts/line-chart";
 import { Sparkline } from "@/components/charts/sparkline";
+import { CriteresCard } from "@/components/ia/criteres-card";
+import { AvisRapportBloc } from "@/components/ia/avis-rapport";
 import { dernieresSemaines, semaine, isoDate } from "@/lib/data/periodes";
+import { formatDateHeure } from "@/lib/utils";
 import type { RoleMetier } from "@/lib/types/database";
 import type { NotePerformance, Rapport } from "@/lib/types/rapport";
-import { lancerAnalyse } from "./actions";
+import { lancerAnalyse, analyserRapportsDuJour } from "./actions";
 
 type EmployeRow = {
   id: string;
@@ -65,6 +68,19 @@ export default async function PerformancesPage({
   if (roleFiltre) employes = employes.filter((e) => e.role_metier_id === roleFiltre);
   const idsFiltre = new Set(employes.map((e) => e.id));
   const notesFiltre = notes.filter((n) => idsFiltre.has(n.employe_id));
+
+  // Avis IA récents (rapports analysés individuellement).
+  const { data: avisData } = await supabase
+    .from("rapports")
+    .select("id, template_nom, soumis_at, note, avis, observations, utilisateurs(nom)")
+    .eq("entreprise_id", entrepriseId)
+    .not("analyse_at", "is", null)
+    .order("soumis_at", { ascending: false })
+    .limit(6);
+  const avisRecents =
+    (avisData as unknown as (Pick<Rapport, "id" | "template_nom" | "soumis_at" | "note" | "avis" | "observations"> & {
+      utilisateurs: { nom: string } | null;
+    })[]) ?? [];
 
   // Courbe équipe (note moyenne par semaine).
   const courbe: LinePoint[] = semaines.map((s) => {
@@ -123,17 +139,23 @@ export default async function PerformancesPage({
         title="Performances"
         subtitle="Vélocité, régularité et notes de votre équipe."
         actions={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <form action={analyserRapportsDuJour}>
+              <input type="hidden" name="tout" value="1" />
+              <Button variant="secondary" size="sm" type="submit">
+                <Icon.sparkles width={16} /> Analyser les rapports
+              </Button>
+            </form>
             <form action={lancerAnalyse}>
               <input type="hidden" name="type" value="hebdomadaire" />
               <Button variant="secondary" size="sm" type="submit">
-                <Icon.sparkles width={16} /> Analyser la semaine
+                <Icon.sparkles width={16} /> Bilan semaine
               </Button>
             </form>
             <form action={lancerAnalyse}>
               <input type="hidden" name="type" value="mensuel" />
               <Button size="sm" type="submit">
-                <Icon.sparkles width={16} /> Analyser le mois
+                <Icon.sparkles width={16} /> Bilan mois
               </Button>
             </form>
           </div>
@@ -187,6 +209,43 @@ export default async function PerformancesPage({
             </ul>
           )}
         </Card>
+      </div>
+
+      {/* Avis IA par rapport + critères de notation */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader
+              title="Avis de l'IA — rapports récents"
+              subtitle="Analyse individuelle de chaque rapport (même sur une journée)"
+            />
+            {avisRecents.length === 0 ? (
+              <p className="muted py-6 text-center text-sm">
+                Aucun rapport analysé. Cliquez sur « Analyser les rapports ».
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {avisRecents.map((r) => (
+                  <div key={r.id}>
+                    <p className="mb-1 text-sm font-medium">
+                      {r.utilisateurs?.nom ?? "—"}
+                      <span className="muted font-normal">
+                        {" "}· {r.template_nom ?? "Rapport"} · {formatDateHeure(r.soumis_at)}
+                      </span>
+                    </p>
+                    <AvisRapportBloc
+                      note={r.note}
+                      avis={r.avis}
+                      observations={r.observations ?? []}
+                      compact
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+        <CriteresCard />
       </div>
 
       <Card className="mt-6">
