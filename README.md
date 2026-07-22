@@ -33,16 +33,70 @@ traverser les tenants, même en cas de bug côté application.
 ## Feuille de route (modules)
 
 - [x] **Module 0** — Fondations & architecture multi-tenant (schéma, RLS, auth, permissions)
-- [ ] Module 1 — Espace Super Admin & générateur de licence
-- [ ] Module 2 — Onboarding & paramétrage entreprise (form builder, templates)
-- [ ] Module 3 — Gestion des employés
-- [ ] Module 4 — Saisie des rapports
-- [ ] Module 5 — Analyse IA (Gemini) & notation
-- [ ] Module 6 — Tableau de bord manager
-- [ ] Module 7 — Export PDF
-- [ ] Module 8 — Export CSV
-- [ ] Module 9 — Sécurité & permissions (transversal)
-- [ ] Module 10 — Notifications & rapports par email (Resend)
+- [x] **Module 1** — Espace Super Admin & générateur de licence
+- [x] **Module 2** — Onboarding & paramétrage entreprise (form builder, templates)
+- [x] **Module 3** — Gestion des employés
+- [x] **Module 4** — Saisie des rapports (formulaire dynamique, anti copier-coller)
+- [x] **Module 5** — Analyse IA (Gemini) & notation (agrégée hebdo/mensuel)
+- [x] **Module 6** — Tableau de bord manager (courbes, classement, alertes, filtres)
+- [x] **Module 7** — Export PDF dynamique (logo + branding, version enrichie manager)
+- [x] **Module 8** — Export CSV (un fichier par template)
+- [x] **Module 9** — Sécurité & permissions (RLS transversale)
+- [x] **Module 10** — Notifications & rapports par email (Resend + webhook entrant)
+
+### Décisions produit par défaut (ajustables)
+
+- **Clé de licence** : opaque, `NEXTIAA-XXXX-XXXX-XXXX`.
+- **Génération** : le Super Admin renseigne l'entreprise cible ; l'entreprise
+  réelle + le 1er manager sont créés à l'**activation** (validité 1 an).
+- **Confidentialité** : le Super Admin ne voit ni les rapports ni les notes.
+- **Valeurs de rapport** : stockées en JSONB (snapshot label+type+valeur).
+- **CSV** : un fichier par template (colonnes propres).
+- **Analyse IA** : agrégée (hebdo/mensuel), déclenchable manuellement par le
+  manager ou automatiquement via CRON.
+- **Email entrant** : format semi-structuré `Label : valeur` mappé sur les
+  champs du template, avec repli « Note libre » pour le texte non reconnu.
+
+## Structure
+
+```
+src/
+  app/
+    (app)/              Espace authentifié (layout avec sidebar par rôle)
+      dashboard/        Tableau de bord adaptatif (super admin / manager / employé)
+      admin/            Super Admin : licences, entreprises
+      equipe, roles, templates, rapports, performances, exports, parametres  (manager)
+      nouveau-rapport, mes-rapports, mes-performances                        (employé)
+    activation/         Activation de licence + création du compte entreprise
+    impression/rapport/[id]/   Export PDF (HTML imprimable)
+    api/
+      exports/csv/      Export CSV
+      email/inbound/    Webhook rapports par email (Module 10.2)
+      cron/analyses/    Analyse IA planifiée (Module 5)
+  components/           Design system (cards, charts SVG, sidebar, icônes…)
+  lib/
+    supabase/           Clients (browser / server / admin)
+    auth/               Permissions & helpers de rôle
+    ia/                 Intégration Gemini + orchestration
+    email/              Resend + parsing entrant
+    rapports/           Similarité + formatage PDF/email
+    exports/            CSV
+    data/               Périodes / agrégation
+```
+
+## Emails (Module 10)
+
+- **Sortant** (10.1) : à chaque soumission, le manager reçoit un email Resend
+  (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`). Best-effort : n'échoue pas la
+  soumission si l'email n'est pas configuré.
+- **Entrant** (10.2) : configurer le routage d'un domaine dédié (Resend Inbound
+  ou équivalent) vers `POST /api/email/inbound?token=<RESEND_WEBHOOK_SECRET>`.
+  Format attendu : une ligne `Label du champ : valeur` par champ du template.
+
+## Analyse IA planifiée (CRON)
+
+`vercel.json` déclenche `/api/cron/analyses` chaque lundi (semaine écoulée) et
+le 1er du mois (mois écoulé). Nécessite `CRON_SECRET` et `GEMINI_API_KEY`.
 
 ## Démarrage local
 
@@ -69,7 +123,13 @@ Les migrations :
 
 - `0001_module0_schema.sql` — tables (`entreprises`, `roles_metier`,
   `utilisateurs`, `licences`) + fonctions utilitaires de sécurité.
-- `0002_module0_rls.sql` — politiques Row Level Security.
+- `0002_module0_rls.sql` — politiques Row Level Security (Module 0).
+- `0003_modules_1_to_5_schema.sql` — templates, champs, associations rôle↔template,
+  rapports (JSONB), notes de performance.
+- `0004_modules_1_to_5_rls.sql` — RLS des rapports/notes (super admin sans accès
+  au contenu) et de la configuration (manager).
+
+Appliquez les 4 fichiers dans l'ordre.
 
 ### 3. Créer le premier Super Admin (bootstrap)
 

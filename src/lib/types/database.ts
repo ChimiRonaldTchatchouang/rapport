@@ -51,5 +51,7 @@ export interface Licence {
   date_expiration: string | null;
   created_by: string | null;
   notes: string | null;
+  entreprise_cible_nom: string | null;
+  contact_prevu_email: string | null;
   updated_at: string;
 }
