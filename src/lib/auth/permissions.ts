@@ -62,6 +62,15 @@ export function isManager(user: Utilisateur | null): boolean {
   return user?.role_systeme === "manager";
 }
 
+export function isChefEquipe(user: Utilisateur | null): boolean {
+  return user?.role_systeme === "chef_equipe";
+}
+
+// Manager général OU chef d'équipe (accès aux vues de pilotage, scopées par RLS).
+export function peutPiloter(user: Utilisateur | null): boolean {
+  return user?.role_systeme === "manager" || user?.role_systeme === "chef_equipe";
+}
+
 export function isEmploye(user: Utilisateur | null): boolean {
   return user?.role_systeme === "employe";
 }

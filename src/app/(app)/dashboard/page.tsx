@@ -9,7 +9,10 @@ export default async function DashboardPage() {
   const user = await requireUser();
 
   if (user.role_systeme === "super_admin") return <SuperAdminDashboard />;
-  if (user.role_systeme === "manager") return <ManagerDashboard user={user} />;
+  // Le chef d'équipe réutilise le tableau de bord manager : la RLS restreint
+  // automatiquement les données à sa seule équipe.
+  if (user.role_systeme === "manager" || user.role_systeme === "chef_equipe")
+    return <ManagerDashboard user={user} />;
   if (user.role_systeme === "employe") return <EmployeDashboard user={user} />;
 
   redirect("/login");

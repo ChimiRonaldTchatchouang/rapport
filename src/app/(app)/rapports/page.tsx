@@ -26,7 +26,8 @@ export default async function RapportsManagerPage({
   searchParams: Promise<{ employe?: string }>;
 }) {
   const { employe } = await searchParams;
-  const user = await requireRole("manager");
+  const user = await requireRole("manager", "chef_equipe");
+  const estManager = user.role_systeme === "manager";
   const supabase = await createClient();
 
   const [{ data: employesData }, rapportsReq] = await Promise.all([
@@ -57,11 +58,13 @@ export default async function RapportsManagerPage({
         title="Rapports de l'équipe"
         subtitle="Consultez et exportez les rapports soumis."
         actions={
-          <Link href="/exports">
-            <Button variant="secondary" size="sm">
-              <Icon.download width={16} /> Export CSV
-            </Button>
-          </Link>
+          estManager ? (
+            <Link href="/exports">
+              <Button variant="secondary" size="sm">
+                <Icon.download width={16} /> Export CSV
+              </Button>
+            </Link>
+          ) : null
         }
       />
 

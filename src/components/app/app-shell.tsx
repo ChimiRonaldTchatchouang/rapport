@@ -6,13 +6,15 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons";
 import { navForRole } from "@/components/app/nav-config";
 import { ChatWidget } from "@/components/ia/chat-widget";
+import { WelcomeTour } from "@/components/onboarding/welcome-tour";
 import { signOut } from "@/app/login/actions";
 import { cn } from "@/lib/utils";
 import type { RoleSysteme } from "@/lib/types/database";
 
 const roleLabel: Record<RoleSysteme, string> = {
   super_admin: "Super Admin",
-  manager: "Manager",
+  manager: "Manager général",
+  chef_equipe: "Chef d'équipe",
   employe: "Employé",
 };
 
@@ -162,8 +164,11 @@ export function AppShell({
         </div>
       </main>
 
-      {/* Assistant IA flottant — réservé au manager */}
+      {/* Assistant IA flottant — réservé au manager général */}
       {role === "manager" && <ChatWidget />}
+
+      {/* Tour d'accueil à la première ouverture (par rôle) */}
+      <WelcomeTour role={role} />
     </div>
   );
 }

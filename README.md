@@ -27,8 +27,20 @@ traverser les tenants, même en cas de bug côté application.
 
 - **super_admin** (équipe Nextiaa) : gère les licences et les entreprises.
   N'appartient à aucune entreprise et **ne voit pas** le contenu des rapports.
-- **manager** : administre **son** entreprise (employés, rôles, rapports, stats).
+- **manager** : *manager général* — administre **toute** son entreprise
+  (employés, équipes, rôles, templates, rapports, stats, assistant IA).
+- **chef_equipe** : *manager d'équipe* — accès **uniquement à son équipe**
+  (membres, rapports, tableau de bord de performance), en lecture seule.
 - **employe** : accède uniquement à **ses** propres rapports et notes.
+
+Les équipes (`equipes`) regroupent les employés ; chaque équipe a un chef
+(`chef_id`). La RLS scope automatiquement le chef d'équipe à son équipe.
+
+### PWA
+
+L'application est installable sur mobile (manifeste + service worker) : à
+l'ouverture sur téléphone, une invite « Installer l'application » apparaît.
+Un tour d'accueil guide chaque utilisateur selon son rôle à la première visite.
 
 ## Feuille de route (modules)
 
@@ -130,9 +142,11 @@ Les migrations :
   au contenu) et de la configuration (manager).
 - `0005_analyse_par_rapport.sql` — analyse IA par rapport (note/avis/observations).
 - `0006_objectifs.sql` — objectifs hebdomadaires du manager + RLS.
+- `0007_equipes.sql` — équipes, rôle chef_equipe, rattachement, helpers RLS.
+- `0008_equipes_rls.sql` — RLS scopée par équipe (chef d'équipe).
 
-Appliquez les 6 fichiers dans l'ordre — ou collez le fichier tout-en-un
-`supabase/setup.sql` (concaténation des 6, à exécuter une fois sur une base neuve).
+Appliquez les 8 fichiers dans l'ordre — ou collez le fichier tout-en-un
+`supabase/setup.sql` (concaténation des 8, à exécuter une fois sur une base neuve).
 
 ### 3. Créer le premier Super Admin (bootstrap)
 

@@ -31,17 +31,32 @@ export function navForRole(role: RoleSysteme): NavSection[] {
           { href: "/dashboard", label: "Tableau de bord", icon: Icon.grid },
           { href: "/performances", label: "Performances", icon: Icon.chart },
           { href: "/rapports", label: "Rapports", icon: Icon.doc },
+          { href: "/archives", label: "Archives", icon: Icon.layers },
           { href: "/objectifs", label: "Objectifs", icon: Icon.check },
         ],
       },
       {
-        titre: "Configuration",
+        titre: "Organisation",
         items: [
           { href: "/equipe", label: "Employés", icon: Icon.users },
+          { href: "/equipes", label: "Équipes", icon: Icon.briefcase },
           { href: "/roles", label: "Rôles métier", icon: Icon.briefcase },
           { href: "/templates", label: "Templates", icon: Icon.layers },
           { href: "/exports", label: "Exports", icon: Icon.download },
           { href: "/parametres", label: "Paramètres", icon: Icon.settings },
+        ],
+      },
+    ];
+  }
+
+  if (role === "chef_equipe") {
+    return [
+      {
+        items: [
+          { href: "/dashboard", label: "Mon équipe", icon: Icon.grid },
+          { href: "/performances", label: "Performances", icon: Icon.chart },
+          { href: "/rapports", label: "Rapports", icon: Icon.doc },
+          { href: "/archives", label: "Archives", icon: Icon.layers },
         ],
       },
     ];

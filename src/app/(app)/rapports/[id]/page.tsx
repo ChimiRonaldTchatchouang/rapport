@@ -16,7 +16,7 @@ export default async function RapportManagerDetail({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  await requireRole("manager");
+  await requireRole("manager", "chef_equipe");
   const supabase = await createClient();
 
   const { data } = await supabase

@@ -31,7 +31,8 @@ export default async function PerformancesPage({
   searchParams: Promise<{ role?: string; debut?: string; fin?: string; message?: string; error?: string }>;
 }) {
   const { role: roleFiltre, debut, fin, message, error } = await searchParams;
-  const user = await requireRole("manager");
+  const user = await requireRole("manager", "chef_equipe");
+  const estManager = user.role_systeme === "manager";
   const supabase = await createClient();
   const entrepriseId = user.entreprise_id!;
 
@@ -144,26 +145,28 @@ export default async function PerformancesPage({
         title="Performances"
         subtitle="Vélocité, régularité et notes de votre équipe."
         actions={
-          <div className="flex flex-wrap gap-2">
-            <form action={analyserRapportsDuJour}>
-              <input type="hidden" name="tout" value="1" />
-              <Button variant="secondary" size="sm" type="submit">
-                <Icon.sparkles width={16} /> Analyser les rapports
-              </Button>
-            </form>
-            <form action={lancerAnalyse}>
-              <input type="hidden" name="type" value="hebdomadaire" />
-              <Button variant="secondary" size="sm" type="submit">
-                <Icon.sparkles width={16} /> Bilan semaine
-              </Button>
-            </form>
-            <form action={lancerAnalyse}>
-              <input type="hidden" name="type" value="mensuel" />
-              <Button size="sm" type="submit">
-                <Icon.sparkles width={16} /> Bilan mois
-              </Button>
-            </form>
-          </div>
+          estManager ? (
+            <div className="flex flex-wrap gap-2">
+              <form action={analyserRapportsDuJour}>
+                <input type="hidden" name="tout" value="1" />
+                <Button variant="secondary" size="sm" type="submit">
+                  <Icon.sparkles width={16} /> Analyser les rapports
+                </Button>
+              </form>
+              <form action={lancerAnalyse}>
+                <input type="hidden" name="type" value="hebdomadaire" />
+                <Button variant="secondary" size="sm" type="submit">
+                  <Icon.sparkles width={16} /> Bilan semaine
+                </Button>
+              </form>
+              <form action={lancerAnalyse}>
+                <input type="hidden" name="type" value="mensuel" />
+                <Button size="sm" type="submit">
+                  <Icon.sparkles width={16} /> Bilan mois
+                </Button>
+              </form>
+            </div>
+          ) : null
         }
       />
 

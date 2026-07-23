@@ -11,6 +11,46 @@ import { genererPdfRapport } from "@/lib/pdf/generer";
 import type { Rapport, ValeurChamp } from "@/lib/types/rapport";
 
 /**
+ * Envoie ses accès à un nouvel utilisateur (identifiants + lien de connexion).
+ * Best-effort : lève une erreur si l'email n'est pas configuré (l'appelant gère).
+ */
+export async function envoyerAccesUtilisateur(params: {
+  email: string;
+  nom: string;
+  motDePasse: string;
+  role: "chef_equipe" | "employe";
+}): Promise<void> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const loginUrl = `${appUrl}/login`;
+  const roleLabel = params.role === "chef_equipe" ? "Chef d'équipe" : "Employé";
+
+  const html = `
+  <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#eef1f6;padding:24px;">
+    <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;border:1px solid #e7e9f0;overflow:hidden;">
+      <div style="background:#4f46e5;padding:20px 24px;color:#fff;">
+        <h1 style="margin:0;font-size:18px;">Bienvenue sur Rapports</h1>
+      </div>
+      <div style="padding:24px;color:#0f172a;">
+        <p style="margin:0 0 16px;">Bonjour <strong>${escapeHtmlLite(params.nom)}</strong>,</p>
+        <p style="margin:0 0 16px;">Un compte <strong>${roleLabel}</strong> a été créé pour vous. Voici vos accès :</p>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+          <tr><td style="padding:8px 0;color:#64748b;">Email</td><td style="padding:8px 0;font-weight:600;">${escapeHtmlLite(params.email)}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b;">Mot de passe</td><td style="padding:8px 0;font-weight:600;">${escapeHtmlLite(params.motDePasse)}</td></tr>
+        </table>
+        <a href="${loginUrl}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:600;">Se connecter</a>
+        <p style="margin:20px 0 0;color:#94a3b8;font-size:13px;">Nous vous conseillons de changer votre mot de passe après la première connexion.</p>
+      </div>
+    </div>
+  </div>`;
+
+  await envoyerEmail({ to: params.email, subject: "Vos accès à Rapports", html });
+}
+
+function escapeHtmlLite(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/**
  * Envoie au manager un email récapitulatif du rapport soumis.
  * Best-effort : lève une erreur si l'email n'est pas configuré (l'appelant
  * l'attrape pour ne pas bloquer la soumission).
