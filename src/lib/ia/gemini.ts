@@ -11,9 +11,30 @@ import { criteresPourPrompt } from "@/lib/ia/criteres";
 // - Réponse strictement au format JSON.
 // ============================================================================
 
-const GEMINI_MODEL = "gemini-2.0-flash";
-const GEMINI_URL = (model: string, key: string) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+// Modèle configurable (défaut aligné sur les exemples actuels de Google AI Studio).
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+const GEMINI_ENDPOINT = (model: string) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
+// Appel centralisé de l'API Gemini.
+// Authentification via le header `X-goog-api-key` (requis par les clés récentes
+// au format `AQ.…`, et compatible aussi avec les clés `AIza…`).
+async function callGemini(body: Record<string, unknown>): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("GEMINI_API_KEY manquante.");
+
+  const res = await fetch(GEMINI_ENDPOINT(GEMINI_MODEL), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-goog-api-key": key },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Erreur Gemini (${res.status}) : ${detail.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+}
 
 export interface ResultatAnalyse {
   note: number; // 0 à 100
@@ -87,9 +108,6 @@ export async function analyserPerformance(params: {
   rapports: Rapport[];
   objectifs?: string | null;
 }): Promise<ResultatAnalyse> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY manquante.");
-
   const prompt = construirePrompt(
     params.nomEmploye,
     params.roleMetier,
@@ -99,26 +117,10 @@ export async function analyserPerformance(params: {
     params.objectifs
   );
 
-  const res = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.4,
-        responseMimeType: "application/json",
-      },
-    }),
+  const texte = await callGemini({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
   });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Erreur Gemini (${res.status}) : ${detail.slice(0, 300)}`);
-  }
-
-  const data = await res.json();
-  const texte: string =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 
   return validerResultat(texte);
 }
@@ -159,44 +161,18 @@ export interface AvisRapport {
 }
 
 async function appelerGemini(prompt: string): Promise<string> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY manquante.");
-
-  const res = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
-    }),
+  return callGemini({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.4, responseMimeType: "application/json" },
   });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Erreur Gemini (${res.status}) : ${detail.slice(0, 300)}`);
-  }
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 // Appel Gemini en mode TEXTE libre (assistant conversationnel du manager).
 export async function genererTexte(prompt: string): Promise<string> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("GEMINI_API_KEY manquante.");
-
-  const res = await fetch(GEMINI_URL(GEMINI_MODEL, key), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.6 },
-    }),
+  return callGemini({
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.6 },
   });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Erreur Gemini (${res.status}) : ${detail.slice(0, 300)}`);
-  }
-  const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
 }
 
 export async function analyserRapport(params: {
