@@ -28,9 +28,12 @@ export async function POST(req: Request) {
       Array.isArray(body.historique) ? body.historique : []
     );
     return Response.json({ reponse });
-  } catch {
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e);
+    console.error("[chat] échec Gemini:", detail);
+    // Espace manager privé : on renvoie la raison exacte pour faciliter le diagnostic.
     return Response.json(
-      { error: "L'assistant est indisponible (clé Gemini configurée ?)." },
+      { error: `Assistant indisponible — ${detail}` },
       { status: 500 }
     );
   }

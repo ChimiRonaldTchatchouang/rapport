@@ -7,10 +7,16 @@ import { Field, Input, Textarea } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { LABEL_STATUT, toneStatut, statutEffectif, joursAvantExpiration } from "@/lib/licence";
 import { formatDate } from "@/lib/utils";
+import { Icon } from "@/components/icons";
 import type { Entreprise, Licence } from "@/lib/types/database";
-import { majEntreprise } from "./actions";
+import { majEntreprise, uploadLogo, supprimerLogo } from "./actions";
 
-export default async function ParametresPage() {
+export default async function ParametresPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string; error?: string }>;
+}) {
+  const { message, error } = await searchParams;
   const user = await requireRole("manager");
   const supabase = await createClient();
 
@@ -32,6 +38,49 @@ export default async function ParametresPage() {
   return (
     <>
       <PageHeader title="Paramètres" subtitle="Informations de votre entreprise et licence." />
+
+      {message && (
+        <p className="mb-4 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{message}</p>
+      )}
+      {error && (
+        <p className="mb-4 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>
+      )}
+
+      {/* Logo de l'entreprise (upload) */}
+      <Card className="mb-6 max-w-2xl">
+        <CardHeader title="Logo" subtitle="Affiché dans les PDF et emails (PNG/JPG, 2 Mo max)." />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-[var(--border)] bg-slate-50 dark:bg-white/5">
+            {entreprise.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={entreprise.logo_url} alt="Logo" className="h-full w-full object-contain" />
+            ) : (
+              <Icon.briefcase width={24} />
+            )}
+          </div>
+          <div className="flex-1 space-y-3">
+            <form action={uploadLogo} className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <input
+                type="file"
+                name="logo"
+                accept="image/png,image/jpeg,image/webp"
+                required
+                className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-brand-700"
+              />
+              <Button type="submit" size="sm" className="shrink-0">
+                <Icon.download width={16} /> Envoyer
+              </Button>
+            </form>
+            {entreprise.logo_url && (
+              <form action={supprimerLogo}>
+                <Button variant="ghost" size="sm" type="submit" className="text-red-600">
+                  Retirer le logo
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {licence && (
         <Card className="mb-6">
@@ -62,9 +111,6 @@ export default async function ParametresPage() {
         <form action={majEntreprise} className="space-y-4">
           <Field label="Nom de l'entreprise">
             <Input name="nom" defaultValue={entreprise.nom} required />
-          </Field>
-          <Field label="URL du logo" hint="(image en ligne)">
-            <Input name="logo_url" type="url" defaultValue={entreprise.logo_url ?? ""} placeholder="https://…/logo.png" />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Email de contact">
