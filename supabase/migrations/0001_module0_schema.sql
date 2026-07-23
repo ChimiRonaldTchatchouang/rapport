@@ -39,7 +39,7 @@ create table if not exists public.entreprises (
   updated_at    timestamptz not null default now()
 );
 
-create trigger trg_entreprises_updated_at
+create or replace trigger trg_entreprises_updated_at
   before update on public.entreprises
   for each row execute function public.set_updated_at();
 
@@ -60,7 +60,7 @@ create table if not exists public.roles_metier (
 
 create index if not exists idx_roles_metier_entreprise on public.roles_metier(entreprise_id);
 
-create trigger trg_roles_metier_updated_at
+create or replace trigger trg_roles_metier_updated_at
   before update on public.roles_metier
   for each row execute function public.set_updated_at();
 
@@ -94,7 +94,7 @@ create index if not exists idx_utilisateurs_entreprise on public.utilisateurs(en
 create index if not exists idx_utilisateurs_role_metier on public.utilisateurs(role_metier_id);
 create index if not exists idx_utilisateurs_manager on public.utilisateurs(manager_id);
 
-create trigger trg_utilisateurs_updated_at
+create or replace trigger trg_utilisateurs_updated_at
   before update on public.utilisateurs
   for each row execute function public.set_updated_at();
 
@@ -122,7 +122,7 @@ create table if not exists public.licences (
 create index if not exists idx_licences_entreprise on public.licences(entreprise_id);
 create index if not exists idx_licences_statut on public.licences(statut);
 
-create trigger trg_licences_updated_at
+create or replace trigger trg_licences_updated_at
   before update on public.licences
   for each row execute function public.set_updated_at();
 
@@ -196,6 +196,6 @@ begin
 end;
 $$;
 
-create trigger trg_utilisateurs_guard_update
+create or replace trigger trg_utilisateurs_guard_update
   before update on public.utilisateurs
   for each row execute function public.guard_utilisateur_update();

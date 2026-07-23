@@ -7,14 +7,17 @@ alter table public.equipes enable row level security;
 grant select, insert, update, delete on public.equipes to authenticated;
 
 -- Équipes : lecture par les membres de l'entreprise, écriture par le manager général.
+drop policy if exists "eq_select_membres" on public.equipes;
 create policy "eq_select_membres" on public.equipes
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "eq_write_manager" on public.equipes;
 create policy "eq_write_manager" on public.equipes
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
 -- Utilisateurs : le chef d'équipe voit les membres de SON équipe.
+drop policy if exists "util_select_chef" on public.utilisateurs;
 create policy "util_select_chef" on public.utilisateurs
   for select using (
     public.current_user_role() = 'chef_equipe'
@@ -23,6 +26,7 @@ create policy "util_select_chef" on public.utilisateurs
   );
 
 -- Rapports : le chef d'équipe voit ceux des membres de son équipe.
+drop policy if exists "rap_select_chef" on public.rapports;
 create policy "rap_select_chef" on public.rapports
   for select using (
     public.current_user_role() = 'chef_equipe'
@@ -30,6 +34,7 @@ create policy "rap_select_chef" on public.rapports
   );
 
 -- Notes de performance : idem, scopées à l'équipe.
+drop policy if exists "note_select_chef" on public.notes_performance;
 create policy "note_select_chef" on public.notes_performance
   for select using (
     public.current_user_role() = 'chef_equipe'

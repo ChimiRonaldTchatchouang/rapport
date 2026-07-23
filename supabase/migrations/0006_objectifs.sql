@@ -17,7 +17,7 @@ create table if not exists public.objectifs (
 create index if not exists idx_objectifs_entreprise on public.objectifs(entreprise_id);
 create index if not exists idx_objectifs_periode on public.objectifs(periode_debut);
 
-create trigger trg_objectifs_updated_at
+create or replace trigger trg_objectifs_updated_at
   before update on public.objectifs
   for each row execute function public.set_updated_at();
 
@@ -25,10 +25,12 @@ alter table public.objectifs enable row level security;
 grant select, insert, update, delete on public.objectifs to authenticated;
 
 -- Lecture : tous les membres de l'entreprise (l'employé voit les objectifs).
+drop policy if exists "obj_select_membres" on public.objectifs;
 create policy "obj_select_membres" on public.objectifs
   for select using (entreprise_id = public.current_entreprise_id());
 
 -- Écriture : manager de l'entreprise uniquement.
+drop policy if exists "obj_write_manager" on public.objectifs;
 create policy "obj_write_manager" on public.objectifs
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())

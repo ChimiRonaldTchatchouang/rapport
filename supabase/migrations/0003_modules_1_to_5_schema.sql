@@ -28,7 +28,7 @@ create table if not exists public.templates_rapport (
   updated_at    timestamptz not null default now()
 );
 create index if not exists idx_templates_entreprise on public.templates_rapport(entreprise_id);
-create trigger trg_templates_updated_at
+create or replace trigger trg_templates_updated_at
   before update on public.templates_rapport
   for each row execute function public.set_updated_at();
 

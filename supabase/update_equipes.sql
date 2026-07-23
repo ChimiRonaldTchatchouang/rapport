@@ -1,4 +1,11 @@
 -- ============================================================================
+-- MISE À JOUR — équipes & chefs d'équipe (migrations 0007 + 0008).
+-- À exécuter si vous avez DÉJÀ appliqué 0001→0006.
+-- Idempotent : ré-exécutable sans erreur.
+-- ============================================================================
+
+-- >>>>> 0007_equipes.sql <<<<<
+-- ============================================================================
 -- Équipes & rôle "chef d'équipe" (manager d'équipe).
 -- - manager      : manager général (voit toute l'entreprise) — inchangé.
 -- - chef_equipe  : voit UNIQUEMENT son équipe (membres, rapports, perfs).
@@ -76,3 +83,53 @@ begin
   return new;
 end;
 $$;
+
+-- >>>>> 0008_equipes_rls.sql <<<<<
+-- ============================================================================
+-- RLS des équipes + accès scopé "chef d'équipe".
+-- Le chef d'équipe voit uniquement les membres et données de SON équipe.
+-- ============================================================================
+
+alter table public.equipes enable row level security;
+grant select, insert, update, delete on public.equipes to authenticated;
+
+-- Équipes : lecture par les membres de l'entreprise, écriture par le manager général.
+drop policy if exists "eq_select_membres" on public.equipes;
+create policy "eq_select_membres" on public.equipes
+  for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "eq_write_manager" on public.equipes;
+create policy "eq_write_manager" on public.equipes
+  for all
+  using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
+  with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
+
+-- Utilisateurs : le chef d'équipe voit les membres de SON équipe.
+drop policy if exists "util_select_chef" on public.utilisateurs;
+create policy "util_select_chef" on public.utilisateurs
+  for select using (
+    public.current_user_role() = 'chef_equipe'
+    and equipe_id is not null
+    and equipe_id = public.current_equipe_id()
+  );
+
+-- Rapports : le chef d'équipe voit ceux des membres de son équipe.
+drop policy if exists "rap_select_chef" on public.rapports;
+create policy "rap_select_chef" on public.rapports
+  for select using (
+    public.current_user_role() = 'chef_equipe'
+    and public.employe_dans_mon_equipe(employe_id)
+  );
+
+-- Notes de performance : idem, scopées à l'équipe.
+drop policy if exists "note_select_chef" on public.notes_performance;
+create policy "note_select_chef" on public.notes_performance
+  for select using (
+    public.current_user_role() = 'chef_equipe'
+    and public.employe_dans_mon_equipe(employe_id)
+  );
+
+-- Les tables de configuration (templates, champs, rôles métier, objectifs) sont
+-- déjà lisibles par tous les membres de l'entreprise via leurs policies
+-- "..._select_membres" (entreprise_id = current_entreprise_id()), ce qui couvre
+-- le chef d'équipe en lecture seule. L'écriture reste réservée au manager général.
+

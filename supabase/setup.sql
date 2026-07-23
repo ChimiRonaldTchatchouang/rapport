@@ -1,7 +1,8 @@
 -- ============================================================================
 -- SETUP COMPLET — à coller en une fois dans Supabase > SQL Editor.
--- Concaténation des migrations 0001 → 0004 (source de vérité : dossier migrations/).
--- Idempotent au niveau des tables (IF NOT EXISTS) ; à exécuter sur une base neuve.
+-- Concaténation des migrations 0001 → 0008 (source de vérité : dossier migrations/).
+-- IDEMPOTENT : ré-exécutable sans erreur (IF NOT EXISTS, create or replace,
+-- drop policy if exists). Sûr sur une base neuve comme existante.
 -- ============================================================================
 
 -- >>>>> 0001_module0_schema.sql <<<<<
@@ -46,7 +47,7 @@ create table if not exists public.entreprises (
   updated_at    timestamptz not null default now()
 );
 
-create trigger trg_entreprises_updated_at
+create or replace trigger trg_entreprises_updated_at
   before update on public.entreprises
   for each row execute function public.set_updated_at();
 
@@ -67,7 +68,7 @@ create table if not exists public.roles_metier (
 
 create index if not exists idx_roles_metier_entreprise on public.roles_metier(entreprise_id);
 
-create trigger trg_roles_metier_updated_at
+create or replace trigger trg_roles_metier_updated_at
   before update on public.roles_metier
   for each row execute function public.set_updated_at();
 
@@ -101,7 +102,7 @@ create index if not exists idx_utilisateurs_entreprise on public.utilisateurs(en
 create index if not exists idx_utilisateurs_role_metier on public.utilisateurs(role_metier_id);
 create index if not exists idx_utilisateurs_manager on public.utilisateurs(manager_id);
 
-create trigger trg_utilisateurs_updated_at
+create or replace trigger trg_utilisateurs_updated_at
   before update on public.utilisateurs
   for each row execute function public.set_updated_at();
 
@@ -129,7 +130,7 @@ create table if not exists public.licences (
 create index if not exists idx_licences_entreprise on public.licences(entreprise_id);
 create index if not exists idx_licences_statut on public.licences(statut);
 
-create trigger trg_licences_updated_at
+create or replace trigger trg_licences_updated_at
   before update on public.licences
   for each row execute function public.set_updated_at();
 
@@ -203,7 +204,7 @@ begin
 end;
 $$;
 
-create trigger trg_utilisateurs_guard_update
+create or replace trigger trg_utilisateurs_guard_update
   before update on public.utilisateurs
   for each row execute function public.guard_utilisateur_update();
 
@@ -238,44 +239,54 @@ grant select, insert, update, delete on public.licences     to authenticated;
 -- ENTREPRISES
 -- ============================================================================
 -- Lecture : membres de l'entreprise + super_admin
+drop policy if exists "ent_select_membres" on public.entreprises;
 create policy "ent_select_membres" on public.entreprises
   for select using (id = public.current_entreprise_id());
 
+drop policy if exists "ent_select_super_admin" on public.entreprises;
 create policy "ent_select_super_admin" on public.entreprises
   for select using (public.is_super_admin());
 
 -- Création : super_admin (l'onboarding entreprise se fait aussi via service_role)
+drop policy if exists "ent_insert_super_admin" on public.entreprises;
 create policy "ent_insert_super_admin" on public.entreprises
   for insert with check (public.is_super_admin());
 
 -- Mise à jour : le manager peut éditer les infos de SON entreprise (Module 2)
+drop policy if exists "ent_update_manager" on public.entreprises;
 create policy "ent_update_manager" on public.entreprises
   for update
   using (public.current_user_role() = 'manager' and id = public.current_entreprise_id())
   with check (id = public.current_entreprise_id());
 
+drop policy if exists "ent_update_super_admin" on public.entreprises;
 create policy "ent_update_super_admin" on public.entreprises
   for update using (public.is_super_admin()) with check (public.is_super_admin());
 
 -- ============================================================================
 -- ROLES_METIER (configuration interne d'une entreprise)
 -- ============================================================================
+drop policy if exists "rm_select_membres" on public.roles_metier;
 create policy "rm_select_membres" on public.roles_metier
   for select using (entreprise_id = public.current_entreprise_id());
 
+drop policy if exists "rm_select_super_admin" on public.roles_metier;
 create policy "rm_select_super_admin" on public.roles_metier
   for select using (public.is_super_admin());
 
 -- Le manager gère les rôles métier de son entreprise (Module 2)
+drop policy if exists "rm_insert_manager" on public.roles_metier;
 create policy "rm_insert_manager" on public.roles_metier
   for insert
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
+drop policy if exists "rm_update_manager" on public.roles_metier;
 create policy "rm_update_manager" on public.roles_metier
   for update
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (entreprise_id = public.current_entreprise_id());
 
+drop policy if exists "rm_delete_manager" on public.roles_metier;
 create policy "rm_delete_manager" on public.roles_metier
   for delete
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
@@ -286,43 +297,52 @@ create policy "rm_delete_manager" on public.roles_metier
 -- Plusieurs politiques permissives sont combinées par un OU logique.
 -- ============================================================================
 -- Lecture : soi-même, OU manager de la même entreprise, OU super_admin
+drop policy if exists "util_select_self" on public.utilisateurs;
 create policy "util_select_self" on public.utilisateurs
   for select using (id = auth.uid());
 
+drop policy if exists "util_select_manager" on public.utilisateurs;
 create policy "util_select_manager" on public.utilisateurs
   for select using (
     public.current_user_role() = 'manager'
     and entreprise_id = public.current_entreprise_id()
   );
 
+drop policy if exists "util_select_super_admin" on public.utilisateurs;
 create policy "util_select_super_admin" on public.utilisateurs
   for select using (public.is_super_admin());
 
 -- Création : le manager peut créer des employés dans SON entreprise (Module 3)
 -- (la création du compte auth associé se fait côté serveur via service_role)
+drop policy if exists "util_insert_manager" on public.utilisateurs;
 create policy "util_insert_manager" on public.utilisateurs
   for insert with check (
     public.current_user_role() = 'manager'
     and entreprise_id = public.current_entreprise_id()
   );
 
+drop policy if exists "util_insert_super_admin" on public.utilisateurs;
 create policy "util_insert_super_admin" on public.utilisateurs
   for insert with check (public.is_super_admin());
 
 -- Mise à jour : soi-même (le garde-fou empêche l'auto-élévation de privilèges),
 -- OU manager sur les utilisateurs de son entreprise, OU super_admin.
+drop policy if exists "util_update_self" on public.utilisateurs;
 create policy "util_update_self" on public.utilisateurs
   for update using (id = auth.uid()) with check (id = auth.uid());
 
+drop policy if exists "util_update_manager" on public.utilisateurs;
 create policy "util_update_manager" on public.utilisateurs
   for update
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
+drop policy if exists "util_update_super_admin" on public.utilisateurs;
 create policy "util_update_super_admin" on public.utilisateurs
   for update using (public.is_super_admin()) with check (public.is_super_admin());
 
 -- Suppression : super_admin uniquement (les managers désactivent via actif=false)
+drop policy if exists "util_delete_super_admin" on public.utilisateurs;
 create policy "util_delete_super_admin" on public.utilisateurs
   for delete using (public.is_super_admin());
 
@@ -333,18 +353,23 @@ create policy "util_delete_super_admin" on public.utilisateurs
 -- CONSULTER la licence de leur entreprise (indicateur d'expiration, statut).
 -- L'activation est une opération privilégiée réalisée côté serveur (service_role).
 -- ============================================================================
+drop policy if exists "lic_select_super_admin" on public.licences;
 create policy "lic_select_super_admin" on public.licences
   for select using (public.is_super_admin());
 
+drop policy if exists "lic_select_membres" on public.licences;
 create policy "lic_select_membres" on public.licences
   for select using (entreprise_id = public.current_entreprise_id());
 
+drop policy if exists "lic_insert_super_admin" on public.licences;
 create policy "lic_insert_super_admin" on public.licences
   for insert with check (public.is_super_admin());
 
+drop policy if exists "lic_update_super_admin" on public.licences;
 create policy "lic_update_super_admin" on public.licences
   for update using (public.is_super_admin()) with check (public.is_super_admin());
 
+drop policy if exists "lic_delete_super_admin" on public.licences;
 create policy "lic_delete_super_admin" on public.licences
   for delete using (public.is_super_admin());
 
@@ -379,7 +404,7 @@ create table if not exists public.templates_rapport (
   updated_at    timestamptz not null default now()
 );
 create index if not exists idx_templates_entreprise on public.templates_rapport(entreprise_id);
-create trigger trg_templates_updated_at
+create or replace trigger trg_templates_updated_at
   before update on public.templates_rapport
   for each row execute function public.set_updated_at();
 
@@ -476,24 +501,30 @@ grant select, insert, update, delete on public.notes_performance  to authenticat
 -- TEMPLATES / CHAMPS / ASSOCIATIONS — lecture par les membres, écriture manager
 -- ---------------------------------------------------------------------------
 -- templates_rapport
+drop policy if exists "tpl_select_membres" on public.templates_rapport;
 create policy "tpl_select_membres" on public.templates_rapport
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "tpl_write_manager" on public.templates_rapport;
 create policy "tpl_write_manager" on public.templates_rapport
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
 -- champs_template
+drop policy if exists "champ_select_membres" on public.champs_template;
 create policy "champ_select_membres" on public.champs_template
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "champ_write_manager" on public.champs_template;
 create policy "champ_write_manager" on public.champs_template
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
 -- role_templates
+drop policy if exists "rt_select_membres" on public.role_templates;
 create policy "rt_select_membres" on public.role_templates
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "rt_write_manager" on public.role_templates;
 create policy "rt_write_manager" on public.role_templates
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
@@ -503,9 +534,11 @@ create policy "rt_write_manager" on public.role_templates
 -- RAPPORTS — employé : ses propres rapports ; manager : ceux de son entreprise.
 -- Aucun accès super_admin (confidentialité). Rapports immuables après soumission.
 -- ---------------------------------------------------------------------------
+drop policy if exists "rap_select_self" on public.rapports;
 create policy "rap_select_self" on public.rapports
   for select using (employe_id = auth.uid());
 
+drop policy if exists "rap_select_manager" on public.rapports;
 create policy "rap_select_manager" on public.rapports
   for select using (
     public.current_user_role() = 'manager'
@@ -513,6 +546,7 @@ create policy "rap_select_manager" on public.rapports
   );
 
 -- L'employé ne peut créer QUE ses propres rapports, dans SON entreprise.
+drop policy if exists "rap_insert_self" on public.rapports;
 create policy "rap_insert_self" on public.rapports
   for insert with check (
     employe_id = auth.uid()
@@ -523,9 +557,11 @@ create policy "rap_insert_self" on public.rapports
 -- NOTES DE PERFORMANCE — employé : ses notes ; manager : celles de l'entreprise.
 -- L'insertion se fait côté serveur (job d'analyse via service_role).
 -- ---------------------------------------------------------------------------
+drop policy if exists "note_select_self" on public.notes_performance;
 create policy "note_select_self" on public.notes_performance
   for select using (employe_id = auth.uid());
 
+drop policy if exists "note_select_manager" on public.notes_performance;
 create policy "note_select_manager" on public.notes_performance
   for select using (
     public.current_user_role() = 'manager'
@@ -564,7 +600,7 @@ create table if not exists public.objectifs (
 create index if not exists idx_objectifs_entreprise on public.objectifs(entreprise_id);
 create index if not exists idx_objectifs_periode on public.objectifs(periode_debut);
 
-create trigger trg_objectifs_updated_at
+create or replace trigger trg_objectifs_updated_at
   before update on public.objectifs
   for each row execute function public.set_updated_at();
 
@@ -572,10 +608,12 @@ alter table public.objectifs enable row level security;
 grant select, insert, update, delete on public.objectifs to authenticated;
 
 -- Lecture : tous les membres de l'entreprise (l'employé voit les objectifs).
+drop policy if exists "obj_select_membres" on public.objectifs;
 create policy "obj_select_membres" on public.objectifs
   for select using (entreprise_id = public.current_entreprise_id());
 
 -- Écriture : manager de l'entreprise uniquement.
+drop policy if exists "obj_write_manager" on public.objectifs;
 create policy "obj_write_manager" on public.objectifs
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
@@ -614,7 +652,7 @@ create table if not exists public.equipes (
 );
 create index if not exists idx_equipes_entreprise on public.equipes(entreprise_id);
 
-create trigger trg_equipes_updated_at
+create or replace trigger trg_equipes_updated_at
   before update on public.equipes
   for each row execute function public.set_updated_at();
 
@@ -671,14 +709,17 @@ alter table public.equipes enable row level security;
 grant select, insert, update, delete on public.equipes to authenticated;
 
 -- Équipes : lecture par les membres de l'entreprise, écriture par le manager général.
+drop policy if exists "eq_select_membres" on public.equipes;
 create policy "eq_select_membres" on public.equipes
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "eq_write_manager" on public.equipes;
 create policy "eq_write_manager" on public.equipes
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
 -- Utilisateurs : le chef d'équipe voit les membres de SON équipe.
+drop policy if exists "util_select_chef" on public.utilisateurs;
 create policy "util_select_chef" on public.utilisateurs
   for select using (
     public.current_user_role() = 'chef_equipe'
@@ -687,6 +728,7 @@ create policy "util_select_chef" on public.utilisateurs
   );
 
 -- Rapports : le chef d'équipe voit ceux des membres de son équipe.
+drop policy if exists "rap_select_chef" on public.rapports;
 create policy "rap_select_chef" on public.rapports
   for select using (
     public.current_user_role() = 'chef_equipe'
@@ -694,6 +736,7 @@ create policy "rap_select_chef" on public.rapports
   );
 
 -- Notes de performance : idem, scopées à l'équipe.
+drop policy if exists "note_select_chef" on public.notes_performance;
 create policy "note_select_chef" on public.notes_performance
   for select using (
     public.current_user_role() = 'chef_equipe'

@@ -20,24 +20,30 @@ grant select, insert, update, delete on public.notes_performance  to authenticat
 -- TEMPLATES / CHAMPS / ASSOCIATIONS — lecture par les membres, écriture manager
 -- ---------------------------------------------------------------------------
 -- templates_rapport
+drop policy if exists "tpl_select_membres" on public.templates_rapport;
 create policy "tpl_select_membres" on public.templates_rapport
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "tpl_write_manager" on public.templates_rapport;
 create policy "tpl_write_manager" on public.templates_rapport
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
 -- champs_template
+drop policy if exists "champ_select_membres" on public.champs_template;
 create policy "champ_select_membres" on public.champs_template
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "champ_write_manager" on public.champs_template;
 create policy "champ_write_manager" on public.champs_template
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
   with check (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id());
 
 -- role_templates
+drop policy if exists "rt_select_membres" on public.role_templates;
 create policy "rt_select_membres" on public.role_templates
   for select using (entreprise_id = public.current_entreprise_id());
+drop policy if exists "rt_write_manager" on public.role_templates;
 create policy "rt_write_manager" on public.role_templates
   for all
   using (public.current_user_role() = 'manager' and entreprise_id = public.current_entreprise_id())
@@ -47,9 +53,11 @@ create policy "rt_write_manager" on public.role_templates
 -- RAPPORTS — employé : ses propres rapports ; manager : ceux de son entreprise.
 -- Aucun accès super_admin (confidentialité). Rapports immuables après soumission.
 -- ---------------------------------------------------------------------------
+drop policy if exists "rap_select_self" on public.rapports;
 create policy "rap_select_self" on public.rapports
   for select using (employe_id = auth.uid());
 
+drop policy if exists "rap_select_manager" on public.rapports;
 create policy "rap_select_manager" on public.rapports
   for select using (
     public.current_user_role() = 'manager'
@@ -57,6 +65,7 @@ create policy "rap_select_manager" on public.rapports
   );
 
 -- L'employé ne peut créer QUE ses propres rapports, dans SON entreprise.
+drop policy if exists "rap_insert_self" on public.rapports;
 create policy "rap_insert_self" on public.rapports
   for insert with check (
     employe_id = auth.uid()
@@ -67,9 +76,11 @@ create policy "rap_insert_self" on public.rapports
 -- NOTES DE PERFORMANCE — employé : ses notes ; manager : celles de l'entreprise.
 -- L'insertion se fait côté serveur (job d'analyse via service_role).
 -- ---------------------------------------------------------------------------
+drop policy if exists "note_select_self" on public.notes_performance;
 create policy "note_select_self" on public.notes_performance
   for select using (employe_id = auth.uid());
 
+drop policy if exists "note_select_manager" on public.notes_performance;
 create policy "note_select_manager" on public.notes_performance
   for select using (
     public.current_user_role() = 'manager'
