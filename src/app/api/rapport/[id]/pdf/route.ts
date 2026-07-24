@@ -44,14 +44,23 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     note = (n as NotePerformance) ?? null;
   }
 
-  const pdf = await genererPdfRapport({
-    rapport: { template_nom: rapport.template_nom, contenu: rapport.contenu as ValeurChamp[], soumis_at: rapport.soumis_at },
-    employe: employe ?? { nom: "Employé", email: "" },
-    entreprise: entreprise ?? { nom: "Entreprise", logo_url: null, contact_email: null, contact_tel: null, adresse: null },
-    note,
-  });
+  let pdf: Uint8Array;
+  try {
+    pdf = await genererPdfRapport({
+      rapport: { template_nom: rapport.template_nom, contenu: rapport.contenu as ValeurChamp[], soumis_at: rapport.soumis_at },
+      employe: employe ?? { nom: "Employé", email: "" },
+      entreprise: entreprise ?? { nom: "Entreprise", logo_url: null, contact_email: null, contact_tel: null, adresse: null },
+      note,
+    });
+  } catch (e) {
+    console.error("[pdf] génération échouée:", e);
+    return new Response("Erreur lors de la génération du PDF.", { status: 500 });
+  }
 
-  const nomFichier = `rapport-${(employe?.nom ?? "employe").replace(/\s+/g, "-")}-${rapport.soumis_at.slice(0, 10)}.pdf`;
+  // Nom de fichier ASCII (évite les soucis d'en-tête HTTP).
+  const nomAscii = (employe?.nom ?? "employe")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "-");
+  const nomFichier = `rapport-${nomAscii}-${rapport.soumis_at.slice(0, 10)}.pdf`;
 
   return new Response(Buffer.from(pdf), {
     headers: {

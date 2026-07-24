@@ -17,8 +17,37 @@ const GRIS = rgb(0.39, 0.45, 0.55);
 const NOIR = rgb(0.06, 0.09, 0.16);
 
 // Découpe un texte en lignes tenant dans `maxWidth`.
+// Caractères hors Latin-1 que l'encodage WinAnsi (Helvetica) sait tout de même
+// représenter (tirets, guillemets typographiques, €, œ…).
+const CP1252_EXTRA = new Set([
+  0x20ac, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030,
+  0x0160, 0x2039, 0x0152, 0x017d, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022,
+  0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x017e, 0x0178,
+]);
+// Remplacements lisibles pour quelques symboles courants.
+const REMPLACEMENTS: Record<string, string> = {
+  "✅": "[OK]", "🟡": "[moyen]", "🔴": "[alerte]", "🟢": "[ok]",
+  "★": "*", "☐": "[ ]", "☑": "[x]", "✓": "v", "⚠": "!", "•": "-",
+  "💡": "", "→": "->", "—": "-", "–": "-", "’": "'", "‘": "'", "“": '"', "”": '"',
+};
+
+// Rend une chaîne encodable par Helvetica/WinAnsi (évite les erreurs pdf-lib).
+function sanitizeWinAnsi(s: string): string {
+  let out = "";
+  for (const ch of String(s)) {
+    if (REMPLACEMENTS[ch] !== undefined) {
+      out += REMPLACEMENTS[ch];
+      continue;
+    }
+    const cp = ch.codePointAt(0) ?? 0;
+    if (cp <= 0xff || CP1252_EXTRA.has(cp)) out += ch;
+    // sinon : caractère non encodable (emoji, symbole rare) -> ignoré
+  }
+  return out;
+}
+
 function wrap(font: PDFFont, taille: number, texte: string, maxWidth: number): string[] {
-  const mots = String(texte).replace(/\r/g, "").split(/\s+/);
+  const mots = sanitizeWinAnsi(String(texte)).replace(/\r/g, "").split(/\s+/);
   const lignes: string[] = [];
   let courante = "";
   for (const mot of mots) {
@@ -87,7 +116,7 @@ export async function genererPdfRapport(params: {
     }
   }
   if (!logoDessine) {
-    page.drawText(entreprise.nom, { x: MARGE, y: y - 22, size: 20, font: bold, color: BRAND });
+    page.drawText(sanitizeWinAnsi(entreprise.nom), { x: MARGE, y: y - 22, size: 20, font: bold, color: BRAND });
   }
 
   const contact = [entreprise.contact_email, entreprise.contact_tel, entreprise.adresse]
