@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   Design system — inspiré des dashboards fintech (indigo/bleu, cartes douces).
-   Palette principale : indigo. Fond gris très clair, cartes blanches arrondies.
+   Design system — Glassmorphism (palette indigo conservée).
+   Fond à halos dégradés + surfaces en verre dépoli (translucide + flou).
    ========================================================================== */
 @theme {
   --color-brand-50: #eef2ff;
@@ -20,39 +20,82 @@
 }
 
 :root {
-  --bg: #eef1f6;
-  --surface: #ffffff;
+  --bg: #e7ebf5;
+  --surface: #ffffff; /* fond opaque pour les inputs */
   --text: #0f172a;
-  --muted: #64748b;
-  --border: #e7e9f0;
+  --muted: #566072;
+  --border: #e3e7f0; /* dividers & bordures d'inputs (ligne visible) */
+
+  /* Verre */
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-strong: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-shadow: 0 8px 32px -12px rgba(31, 38, 135, 0.22);
+  --blur: 16px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b1120;
+    --bg: #0a0f1e;
     --surface: #131a2b;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --border: #24304a;
+    --text: #e6eaf3;
+    --muted: #9aa5b8;
+    --border: #26304a;
+
+    --glass-bg: rgba(23, 30, 48, 0.55);
+    --glass-strong: rgba(23, 30, 48, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5);
   }
+}
+:root[data-theme="dark"] {
+  --bg: #0a0f1e;
+  --surface: #131a2b;
+  --text: #e6eaf3;
+  --muted: #9aa5b8;
+  --border: #26304a;
+  --glass-bg: rgba(23, 30, 48, 0.55);
+  --glass-strong: rgba(23, 30, 48, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.5);
 }
 
 html,
 body {
-  background: var(--bg);
   color: var(--text);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Carte réutilisable */
+/* Fond décoratif fixe : halos indigo/violet/cyan derrière le verre. */
+body {
+  min-height: 100vh;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(38rem 38rem at 8% -5%, rgba(99, 102, 241, 0.20), transparent 60%),
+    radial-gradient(34rem 34rem at 100% 8%, rgba(139, 92, 246, 0.18), transparent 60%),
+    radial-gradient(40rem 40rem at 50% 110%, rgba(56, 189, 248, 0.14), transparent 60%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Carte en verre dépoli */
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.4);
+  backdrop-filter: blur(var(--blur)) saturate(1.4);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
-    0 8px 24px -12px rgba(15, 23, 42, 0.12);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Surface verre réutilisable (sidebar, topbar, panneaux) */
+.glass {
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(1.4);
+  backdrop-filter: blur(var(--blur)) saturate(1.4);
+  border-color: var(--glass-border);
 }
 
 .muted {
@@ -69,4 +112,11 @@ body {
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
+}
+
+/* Respecte la préférence de réduction d'animations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }

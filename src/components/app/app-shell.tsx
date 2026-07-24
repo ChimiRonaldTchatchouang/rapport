@@ -113,7 +113,7 @@ export function AppShell({
   return (
     <div className="min-h-screen">
       {/* Sidebar desktop */}
-      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col justify-between border-r border-[var(--border)] bg-[var(--surface)] p-4 lg:flex">
+      <aside className="glass fixed inset-y-0 left-0 hidden w-64 flex-col justify-between border-r p-4 lg:flex">
         <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
           {Brand}
           {NavList}
@@ -122,7 +122,7 @@ export function AppShell({
       </aside>
 
       {/* Topbar mobile */}
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)]/90 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="glass sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 lg:hidden">
         {Brand}
         <button
           onClick={() => setOpen(true)}
@@ -139,7 +139,7 @@ export function AppShell({
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col justify-between bg-[var(--surface)] p-4">
+          <aside className="glass absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col justify-between border-r p-4">
             <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
               <div className="flex items-center justify-between">
                 {Brand}

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 const inputBase =
-  "w-full rounded-xl border border-[var(--border)] bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-white/5 placeholder:text-slate-400";
+  "w-full rounded-xl border border-[var(--border)] bg-white/70 px-3.5 py-2.5 text-sm outline-none backdrop-blur-sm transition focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 dark:bg-white/5 placeholder:text-slate-400";
 
 export function Label({
   children,
