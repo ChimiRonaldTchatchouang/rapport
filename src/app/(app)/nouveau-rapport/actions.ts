@@ -15,7 +15,7 @@ import { analyserEtEnregistrerRapport } from "@/lib/ia/generation";
 import type { ChampTemplate, ValeurChamp } from "@/lib/types/rapport";
 
 export async function soumettreRapport(formData: FormData) {
-  const employe = await requireRole("employe");
+  const employe = await requireRole("employe", "chef_equipe");
   const supabase = await createClient();
   const templateId = String(formData.get("template_id"));
 

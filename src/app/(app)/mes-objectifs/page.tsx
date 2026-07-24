@@ -11,7 +11,7 @@ import type { Objectif } from "@/lib/types/database";
 // Objectifs fixés par le manager, visibles par l'employé : ceux de toute
 // l'entreprise + ceux de son rôle métier + ceux de son équipe.
 export default async function MesObjectifsPage() {
-  const user = await requireRole("employe");
+  const user = await requireRole("employe", "chef_equipe");
   const supabase = await createClient();
 
   const { data } = await supabase

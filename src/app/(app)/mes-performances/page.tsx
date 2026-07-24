@@ -9,7 +9,7 @@ import { LineChart, type LinePoint } from "@/components/charts/line-chart";
 import type { NotePerformance } from "@/lib/types/rapport";
 
 export default async function MesPerformancesPage() {
-  const employe = await requireRole("employe");
+  const employe = await requireRole("employe", "chef_equipe");
   const supabase = await createClient();
 
   const { data } = await supabase

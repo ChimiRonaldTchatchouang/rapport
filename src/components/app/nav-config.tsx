@@ -30,6 +30,7 @@ export function navForRole(role: RoleSysteme): NavSection[] {
         items: [
           { href: "/dashboard", label: "Tableau de bord", icon: Icon.grid },
           { href: "/performances", label: "Performances", icon: Icon.chart },
+          { href: "/analyses", label: "Analyses", icon: Icon.chart },
           { href: "/rapports", label: "Rapports", icon: Icon.doc },
           { href: "/archives", label: "Archives", icon: Icon.layers },
           { href: "/objectifs", label: "Objectifs", icon: Icon.check },
@@ -52,9 +53,19 @@ export function navForRole(role: RoleSysteme): NavSection[] {
   if (role === "chef_equipe") {
     return [
       {
+        titre: "Mon activité",
         items: [
-          { href: "/dashboard", label: "Mon équipe", icon: Icon.grid },
+          { href: "/nouveau-rapport", label: "Nouveau rapport", icon: Icon.plus },
+          { href: "/mes-rapports", label: "Mes rapports", icon: Icon.doc },
+          { href: "/mes-performances", label: "Mes performances", icon: Icon.chart },
+        ],
+      },
+      {
+        titre: "Mon équipe",
+        items: [
+          { href: "/dashboard", label: "Tableau de bord", icon: Icon.grid },
           { href: "/performances", label: "Performances", icon: Icon.chart },
+          { href: "/analyses", label: "Analyses", icon: Icon.chart },
           { href: "/rapports", label: "Rapports", icon: Icon.doc },
           { href: "/archives", label: "Archives", icon: Icon.layers },
         ],

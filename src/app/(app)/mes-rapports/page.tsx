@@ -16,7 +16,7 @@ export default async function MesRapportsPage({
   searchParams: Promise<{ message?: string }>;
 }) {
   const { message } = await searchParams;
-  const employe = await requireRole("employe");
+  const employe = await requireRole("employe", "chef_equipe");
   const supabase = await createClient();
 
   const { data } = await supabase

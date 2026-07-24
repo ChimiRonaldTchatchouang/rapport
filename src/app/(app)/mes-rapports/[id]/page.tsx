@@ -15,7 +15,7 @@ export default async function MonRapportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const employe = await requireRole("employe");
+  const employe = await requireRole("employe", "chef_equipe");
   const supabase = await createClient();
 
   const { data } = await supabase
