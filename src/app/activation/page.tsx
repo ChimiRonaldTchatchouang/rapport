@@ -15,7 +15,7 @@ export default async function ActivationPage({
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center gap-6 px-6 py-12">
       <div className="flex items-center gap-2">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-gold-500 text-white ring-1 ring-gold-400/40">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white">
           <Icon.logo width={22} height={22} />
         </span>
         <span className="text-xl font-bold">Rapports</span>

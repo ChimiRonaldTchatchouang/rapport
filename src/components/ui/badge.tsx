@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type Tone = "neutral" | "success" | "warning" | "danger" | "brand" | "info" | "gold";
+type Tone = "neutral" | "success" | "warning" | "danger" | "brand" | "info";
 
 const tones: Record<Tone, string> = {
   neutral: "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300",
@@ -9,7 +9,6 @@ const tones: Record<Tone, string> = {
   danger: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
   brand: "bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300",
   info: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
-  gold: "bg-gold-500/15 text-gold-600 dark:bg-gold-500/20 dark:text-gold-300",
 };
 
 export function Badge({

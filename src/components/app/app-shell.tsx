@@ -82,7 +82,7 @@ export function AppShell({
 
   const Brand = (
     <div className="flex items-center gap-2 px-2">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-gold-500 text-white shadow-sm ring-1 ring-gold-400/40">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
         <Icon.logo width={20} height={20} />
       </span>
       <span className="text-lg font-bold tracking-tight">Rapports</span>
