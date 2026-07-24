@@ -53,7 +53,7 @@ export function ChatWidget() {
       {/* Bouton flottant */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg transition hover:bg-brand-700"
+        className="fixed bottom-5 left-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-gold-500 text-white shadow-lg transition hover:opacity-90"
         aria-label="Assistant IA"
       >
         {open ? (

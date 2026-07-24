@@ -16,6 +16,12 @@
   --color-brand-800: #3730a3;
   --color-brand-900: #312e81;
 
+  /* Accent doré (secondaire, finition premium) */
+  --color-gold-300: #f6d38a;
+  --color-gold-400: #efc158;
+  --color-gold-500: #e0a92e;
+  --color-gold-600: #c8901f;
+
   --radius-card: 1.25rem;
 }
 

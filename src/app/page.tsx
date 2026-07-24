@@ -16,7 +16,7 @@ export default async function HomePage() {
     <main className="mx-auto max-w-5xl px-6 py-10">
       <nav className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-gold-500 text-white ring-1 ring-gold-400/40">
             <Icon.logo width={20} height={20} />
           </span>
           <span className="text-lg font-bold">Rapports</span>

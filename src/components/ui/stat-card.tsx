@@ -19,11 +19,18 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "card p-5",
+        "card relative overflow-hidden p-5",
         highlight && "border-transparent bg-brand-600 text-white shadow-lg"
       )}
     >
-      <div className="flex items-center justify-between">
+      {highlight && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full"
+          style={{ background: "radial-gradient(closest-side, rgba(224,169,46,0.55), transparent)" }}
+        />
+      )}
+      <div className="relative flex items-center justify-between">
         <span
           className={cn(
             "text-sm",
@@ -43,7 +50,7 @@ export function StatCard({
           </span>
         )}
       </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
+      <div className="relative mt-2 flex items-end justify-between gap-2">
         <span className="text-2xl font-bold tracking-tight">{value}</span>
         {delta && (
           <span
@@ -61,7 +68,7 @@ export function StatCard({
         )}
       </div>
       {hint && (
-        <p className={cn("mt-1 text-xs", highlight ? "text-white/70" : "muted")}>
+        <p className={cn("relative mt-1 text-xs", highlight ? "text-white/70" : "muted")}>
           {hint}
         </p>
       )}
