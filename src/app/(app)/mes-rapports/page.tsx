@@ -34,7 +34,7 @@ export default async function MesRapportsPage({
         subtitle="Historique de vos soumissions."
         actions={
           <ButtonLink href="/nouveau-rapport">
-            <Icon.plus width={18} /> Nouveau
+            <Icon.plus width={18} /> Nouveau rapport
           </ButtonLink>
         }
       />

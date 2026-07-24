@@ -62,14 +62,13 @@ export function navForRole(role: RoleSysteme): NavSection[] {
     ];
   }
 
-  // employe
+  // employe — expérience volontairement simple : 3 onglets.
   return [
     {
       items: [
-        { href: "/dashboard", label: "Accueil", icon: Icon.grid },
-        { href: "/nouveau-rapport", label: "Nouveau rapport", icon: Icon.plus },
-        { href: "/mes-rapports", label: "Mes rapports", icon: Icon.doc },
-        { href: "/mes-performances", label: "Mes performances", icon: Icon.chart },
+        { href: "/mes-rapports", label: "Rapports", icon: Icon.doc },
+        { href: "/mes-performances", label: "Performances", icon: Icon.chart },
+        { href: "/mes-objectifs", label: "Objectifs", icon: Icon.check },
       ],
     },
   ];

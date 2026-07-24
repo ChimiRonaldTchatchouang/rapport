@@ -2,7 +2,6 @@ import { requireUser } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import { SuperAdminDashboard } from "./_super-admin";
 import { ManagerDashboard } from "./_manager";
-import { EmployeDashboard } from "./_employe";
 
 // Tableau de bord adaptatif selon le rôle système.
 export default async function DashboardPage() {
@@ -13,7 +12,8 @@ export default async function DashboardPage() {
   // automatiquement les données à sa seule équipe.
   if (user.role_systeme === "manager" || user.role_systeme === "chef_equipe")
     return <ManagerDashboard user={user} />;
-  if (user.role_systeme === "employe") return <EmployeDashboard user={user} />;
+  // Employé : expérience simplifiée — on l'envoie directement sur ses rapports.
+  if (user.role_systeme === "employe") redirect("/mes-rapports");
 
   redirect("/login");
 }

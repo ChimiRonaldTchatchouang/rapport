@@ -14,6 +14,7 @@ export async function definirObjectif(formData: FormData) {
   if (!contenu) return;
 
   const roleMetierId = String(formData.get("role_metier_id") ?? "") || null;
+  const equipeId = String(formData.get("equipe_id") ?? "") || null;
   const semaineChoisie = String(formData.get("periode_debut") ?? "");
   const debut = semaineChoisie
     ? isoDate(semaine(new Date(semaineChoisie)).debut)
@@ -22,6 +23,7 @@ export async function definirObjectif(formData: FormData) {
   await supabase.from("objectifs").insert({
     entreprise_id: manager.entreprise_id,
     role_metier_id: roleMetierId,
+    equipe_id: equipeId,
     periode_debut: debut,
     contenu,
     created_by: manager.id,

@@ -31,9 +31,10 @@ function etapesPour(role: RoleSysteme): Etape[] {
       ];
     default: // employe
       return [
-        { emoji: "👋", titre: "Bienvenue !", texte: "Ici, vous remplissez vos rapports d'activité en quelques secondes." },
-        { emoji: "✍️", titre: "Nouveau rapport", texte: "Cliquez sur « Nouveau rapport » : le formulaire s'adapte à votre rôle." },
-        { emoji: "📈", titre: "Vos performances", texte: "Suivez votre note et les retours de l'IA dans « Mes performances »." },
+        { emoji: "👋", titre: "Bienvenue !", texte: "Ici, tout est simple : 3 onglets seulement." },
+        { emoji: "✍️", titre: "Rapports", texte: "Cliquez sur « Nouveau rapport » pour remplir le vôtre. Vos rapports s'affichent dans la liste juste en dessous." },
+        { emoji: "📈", titre: "Performances", texte: "Suivez votre note et les retours de l'IA sur votre travail." },
+        { emoji: "🎯", titre: "Objectifs", texte: "Consultez les objectifs fixés par votre manager pour la semaine." },
       ];
   }
 }
