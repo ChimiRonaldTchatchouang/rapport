@@ -2,6 +2,17 @@ import { Badge } from "@/components/ui/badge";
 import { valeurLisible, type ValeurChamp } from "@/lib/types/rapport";
 import { formatDateHeure } from "@/lib/utils";
 
+// Regroupe des valeurs de champ par section, en préservant l'ordre.
+function grouperParSection(contenu: ValeurChamp[]) {
+  const groupes: { section: string | null; items: ValeurChamp[] }[] = [];
+  for (const c of contenu) {
+    const last = groupes[groupes.length - 1];
+    if (last && last.section === (c.section ?? null)) last.items.push(c);
+    else groupes.push({ section: c.section ?? null, items: [c] });
+  }
+  return groupes;
+}
+
 // Vue détaillée d'un rapport (contenu structuré selon l'ordre des champs).
 export function RapportView({
   templateNom,
@@ -29,17 +40,26 @@ export function RapportView({
         Soumis le {formatDateHeure(soumisAt)}
       </p>
 
-      <dl className="overflow-hidden rounded-xl border border-[var(--border)]">
-        {contenu.map((c, i) => (
-          <div
-            key={c.champ_id + i}
-            className="grid grid-cols-1 gap-1 border-b border-[var(--border)] px-4 py-3 last:border-0 sm:grid-cols-3"
-          >
-            <dt className="muted text-sm">{c.label}</dt>
-            <dd className="text-sm font-medium sm:col-span-2">{valeurLisible(c)}</dd>
-          </div>
-        ))}
-      </dl>
+      {grouperParSection(contenu).map((g, gi) => (
+        <div key={gi} className="mb-4 last:mb-0">
+          {g.section && (
+            <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-600">
+              {g.section}
+            </h4>
+          )}
+          <dl className="overflow-hidden rounded-xl border border-[var(--border)]">
+            {g.items.map((c, i) => (
+              <div
+                key={c.champ_id + i}
+                className="grid grid-cols-1 gap-1 border-b border-[var(--border)] px-4 py-3 last:border-0 sm:grid-cols-3"
+              >
+                <dt className="muted text-sm">{c.label}</dt>
+                <dd className="text-sm font-medium sm:col-span-2">{valeurLisible(c)}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
     </div>
   );
 }

@@ -5,16 +5,20 @@ export type ChampType =
   | "texte_long"
   | "case_a_cocher"
   | "choix_multiple"
+  | "cases_multiples"
   | "nombre"
-  | "date";
+  | "date"
+  | "echelle";
 
 export const LABEL_TYPE_CHAMP: Record<ChampType, string> = {
   texte_court: "Texte court",
   texte_long: "Texte long",
-  case_a_cocher: "Case à cocher",
-  choix_multiple: "Choix multiple",
+  case_a_cocher: "Case à cocher (oui/non)",
+  choix_multiple: "Choix unique (liste)",
+  cases_multiples: "Cases à cocher multiples",
   nombre: "Nombre",
   date: "Date",
+  echelle: "Échelle 1 à 5",
 };
 
 export interface TemplateRapport {
@@ -36,6 +40,7 @@ export interface ChampTemplate {
   options: string[] | null;
   obligatoire: boolean;
   ordre: number;
+  section: string | null;
   created_at: string;
 }
 
@@ -44,7 +49,8 @@ export interface ValeurChamp {
   champ_id: string;
   label: string;
   type: ChampType;
-  valeur: string | number | boolean | null;
+  valeur: string | number | boolean | string[] | null;
+  section?: string | null;
 }
 
 export interface Rapport {
@@ -82,6 +88,8 @@ export interface NotePerformance {
 // Rendu lisible d'une valeur de champ (PDF, email, tableau).
 export function valeurLisible(v: ValeurChamp): string {
   if (v.valeur === null || v.valeur === "") return "—";
+  if (Array.isArray(v.valeur)) return v.valeur.length ? v.valeur.join(", ") : "—";
   if (v.type === "case_a_cocher") return v.valeur ? "Oui" : "Non";
+  if (v.type === "echelle") return `${v.valeur} / 5`;
   return String(v.valeur);
 }

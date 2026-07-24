@@ -77,6 +77,14 @@ export default async function NouveauRapportPage({
     .order("ordre", { ascending: true });
   const champs = (champsData as ChampTemplate[]) ?? [];
 
+  // Regroupement des champs par section (dans l'ordre).
+  const groupes: { section: string | null; items: ChampTemplate[] }[] = [];
+  for (const c of champs) {
+    const last = groupes[groupes.length - 1];
+    if (last && last.section === (c.section ?? null)) last.items.push(c);
+    else groupes.push({ section: c.section ?? null, items: [c] });
+  }
+
   return (
     <>
       <PageHeader
@@ -107,13 +115,22 @@ export default async function NouveauRapportPage({
         <form action={soumettreRapport} className="space-y-5">
           <input type="hidden" name="template_id" value={templateId} />
 
-          {champs.map((c) => (
-            <div key={c.id}>
-              <Label>
-                {c.label}
-                {c.obligatoire && <span className="ml-1 text-red-500">*</span>}
-              </Label>
-              <ChampInput champ={c} />
+          {groupes.map((g, gi) => (
+            <div key={gi} className="space-y-5">
+              {g.section && (
+                <h3 className="border-b border-[var(--border)] pb-2 text-sm font-semibold uppercase tracking-wide text-brand-600">
+                  {g.section}
+                </h3>
+              )}
+              {g.items.map((c) => (
+                <div key={c.id}>
+                  <Label>
+                    {c.label}
+                    {c.obligatoire && <span className="ml-1 text-red-500">*</span>}
+                  </Label>
+                  <ChampInput champ={c} />
+                </div>
+              ))}
             </div>
           ))}
 

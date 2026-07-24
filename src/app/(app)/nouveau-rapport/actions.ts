@@ -34,14 +34,22 @@ export async function soumettreRapport(formData: FormData) {
     .order("ordre", { ascending: true });
   const champs = (champsData as ChampTemplate[]) ?? [];
 
-  // Construit le contenu (snapshot label+type+valeur).
+  // Construit le contenu (snapshot label+type+valeur+section).
   const contenu: ValeurChamp[] = champs.map((c) => {
-    const brut = formData.get(`champ_${c.id}`);
     let valeur: ValeurChamp["valeur"] = null;
-    if (c.type === "case_a_cocher") valeur = brut === "on";
-    else if (c.type === "nombre") valeur = brut ? Number(brut) : null;
-    else valeur = brut ? String(brut) : null;
-    return { champ_id: c.id, label: c.label, type: c.type, valeur };
+    if (c.type === "case_a_cocher") {
+      valeur = formData.get(`champ_${c.id}`) === "on";
+    } else if (c.type === "cases_multiples") {
+      const arr = formData.getAll(`champ_${c.id}`).map(String).filter(Boolean);
+      valeur = arr;
+    } else if (c.type === "nombre" || c.type === "echelle") {
+      const brut = formData.get(`champ_${c.id}`);
+      valeur = brut ? Number(brut) : null;
+    } else {
+      const brut = formData.get(`champ_${c.id}`);
+      valeur = brut ? String(brut) : null;
+    }
+    return { champ_id: c.id, label: c.label, type: c.type, valeur, section: c.section };
   });
 
   // Détection de similarité avec le dernier rapport de l'employé sur ce template.

@@ -89,6 +89,11 @@ export default async function TemplateBuilderPage({
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-medium">{c.label}</p>
                       <p className="muted text-xs">
+                        {c.section && (
+                          <span className="mr-1 rounded bg-brand-50 px-1.5 py-0.5 text-brand-700 dark:bg-white/10 dark:text-brand-300">
+                            {c.section}
+                          </span>
+                        )}
                         {LABEL_TYPE_CHAMP[c.type]}
                         {c.options && ` · ${c.options.join(", ")}`}
                       </p>
@@ -122,7 +127,10 @@ export default async function TemplateBuilderPage({
                   ))}
                 </Select>
               </Field>
-              <Field label="Options" hint="(choix multiple, séparés par ,)">
+              <Field label="Section" hint="(optionnel)">
+                <Input name="section" placeholder="Ex. 1 — Identification" />
+              </Field>
+              <Field label="Options" hint="(choix/cases/échelle, séparés par ,)">
                 <Input name="options" placeholder="Option A, Option B, Option C" />
               </Field>
               <label className="flex items-center gap-2 text-sm">

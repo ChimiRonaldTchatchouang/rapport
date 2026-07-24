@@ -11,8 +11,10 @@ import { trouverBlueprint } from "@/lib/templates/prebuilt";
 import type { ChampType } from "@/lib/types/rapport";
 
 const TYPES_VALIDES: ChampType[] = [
-  "texte_court", "texte_long", "case_a_cocher", "choix_multiple", "nombre", "date",
+  "texte_court", "texte_long", "case_a_cocher", "choix_multiple",
+  "cases_multiples", "nombre", "date", "echelle",
 ];
+const TYPES_AVEC_OPTIONS: ChampType[] = ["choix_multiple", "cases_multiples", "echelle"];
 
 // Duplique un template pré-construit dans l'entreprise.
 export async function dupliquerPrebuilt(formData: FormData) {
@@ -41,6 +43,7 @@ export async function dupliquerPrebuilt(formData: FormData) {
       options: c.options ?? null,
       obligatoire: c.obligatoire,
       ordre: i,
+      section: c.section ?? null,
     }))
   );
   revalidatePath("/templates");
@@ -93,9 +96,10 @@ export async function ajouterChamp(formData: FormData) {
 
   const optionsBrut = String(formData.get("options") ?? "").trim();
   const options =
-    type === "choix_multiple" && optionsBrut
+    TYPES_AVEC_OPTIONS.includes(type) && optionsBrut
       ? optionsBrut.split(",").map((o) => o.trim()).filter(Boolean)
       : null;
+  const section = String(formData.get("section") ?? "").trim() || null;
 
   // ordre = à la fin
   const { count } = await supabase
@@ -111,6 +115,7 @@ export async function ajouterChamp(formData: FormData) {
     options,
     obligatoire: formData.get("obligatoire") === "on",
     ordre: count ?? 0,
+    section,
   });
   revalidatePath(`/templates/${templateId}`);
 }

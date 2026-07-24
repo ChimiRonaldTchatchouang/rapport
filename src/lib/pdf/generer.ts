@@ -131,8 +131,18 @@ export async function genererPdfRapport(params: {
   );
   y -= 10;
 
-  // --- Champs ---
+  // --- Champs (regroupés par section) ---
+  let sectionCourante: string | null | undefined;
   for (const c of rapport.contenu as ValeurChamp[]) {
+    if ((c.section ?? null) !== (sectionCourante ?? null)) {
+      sectionCourante = c.section ?? null;
+      if (sectionCourante) {
+        y -= 6;
+        sautSiBesoin(24);
+        texte(sectionCourante.toUpperCase(), bold, 11, BRAND);
+        y -= 2;
+      }
+    }
     sautSiBesoin(30);
     texte(c.label, bold, 10, GRIS);
     texte(valeurLisible(c), font, 12, NOIR);
