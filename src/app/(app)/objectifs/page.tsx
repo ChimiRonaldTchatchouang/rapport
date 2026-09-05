@@ -1,12 +1,14 @@
+import { Plus, Target } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/legacy/card";
-import { Button } from "@/components/legacy/button";
-import { Badge } from "@/components/legacy/badge";
-import { Field, Textarea, Select, Input } from "@/components/legacy/field";
-import { EmptyState } from "@/components/legacy/empty";
-import { Icon } from "@/components/icons";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Field } from "@/components/ui/field";
 import { formatDate } from "@/lib/utils";
 import { semaine, isoDate } from "@/lib/data/periodes";
 import type { Equipe, Objectif, RoleMetier } from "@/lib/types/database";
@@ -48,57 +50,69 @@ export default async function ObjectifsPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-1">
-          <CardHeader title="Nouvel objectif" />
-          <form action={definirObjectif} className="space-y-4">
-            <Field label="Semaine" hint="(lundi)">
-              <Input name="periode_debut" type="date" defaultValue={semaineCourante} />
-            </Field>
-            <Field label="Rôle métier" hint="(optionnel)">
-              <Select name="role_metier_id" defaultValue="">
-                <option value="">— Tous —</option>
-                {roles.map((r) => (
-                  <option key={r.id} value={r.id}>{r.nom}</option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="Équipe" hint="(optionnel)">
-              <Select name="equipe_id" defaultValue="">
-                <option value="">— Toutes —</option>
-                {equipes.map((e) => (
-                  <option key={e.id} value={e.id}>{e.nom}</option>
-                ))}
-              </Select>
-            </Field>
-            <p className="muted text-xs">
-              Sans rôle ni équipe : l&apos;objectif s&apos;applique à toute l&apos;entreprise.
-            </p>
-            <Field label="Objectifs">
-              <Textarea name="contenu" required placeholder="Ex. Réaliser 50 appels, conclure 5 ventes, relancer les devis en attente…" />
-            </Field>
-            <Button type="submit" className="w-full">
-              <Icon.plus width={18} /> Définir l'objectif
-            </Button>
-          </form>
+          <CardHeader><CardTitle>Nouvel objectif</CardTitle></CardHeader>
+          <CardContent>
+            <form action={definirObjectif} className="space-y-4">
+              <Field label="Semaine" hint=" (lundi)">
+                <Input name="periode_debut" type="date" defaultValue={semaineCourante} />
+              </Field>
+              <Field label="Rôle métier" hint=" (optionnel)">
+                <Select name="role_metier_id" defaultValue="">
+                  <option value="">— Tous —</option>
+                  {roles.map((r) => (
+                    <option key={r.id} value={r.id}>{r.nom}</option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Équipe" hint=" (optionnel)">
+                <Select name="equipe_id" defaultValue="">
+                  <option value="">— Toutes —</option>
+                  {equipes.map((e) => (
+                    <option key={e.id} value={e.id}>{e.nom}</option>
+                  ))}
+                </Select>
+              </Field>
+              <p className="text-xs text-muted-foreground">
+                Sans rôle ni équipe : l&apos;objectif s&apos;applique à toute l&apos;entreprise.
+              </p>
+              <Field label="Objectifs">
+                <Textarea name="contenu" required placeholder="Ex. Réaliser 50 appels, conclure 5 ventes, relancer les devis en attente…" />
+              </Field>
+              <Button type="submit" className="w-full">
+                <Plus className="size-4" /> Définir l&apos;objectif
+              </Button>
+            </form>
+          </CardContent>
         </Card>
 
         <div className="lg:col-span-2">
           {objectifs.length === 0 ? (
-            <EmptyState title="Aucun objectif" description="Définissez les objectifs de la semaine." icon="🎯" />
+            <Card>
+              <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+                <Target className="size-8 text-muted-foreground" />
+                <div>
+                  <p className="font-semibold">Aucun objectif</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Définissez les objectifs de la semaine.</p>
+                </div>
+              </CardContent>
+            </Card>
           ) : (
             <div className="space-y-4">
               {objectifs.map((o) => (
                 <Card key={o.id}>
-                  <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <Badge tone={o.periode_debut === semaineCourante ? "brand" : "neutral"}>
-                      Sem. du {formatDate(o.periode_debut)}
-                    </Badge>
-                    <Badge tone="info">{cible(o)}</Badge>
-                    <form action={supprimerObjectif} className="ml-auto">
-                      <input type="hidden" name="id" value={o.id} />
-                      <Button variant="ghost" size="sm" type="submit" className="text-red-600">Supprimer</Button>
-                    </form>
-                  </div>
-                  <p className="whitespace-pre-wrap text-sm">{o.contenu}</p>
+                  <CardContent>
+                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                      <Badge variant={o.periode_debut === semaineCourante ? "default" : "secondary"}>
+                        Sem. du {formatDate(o.periode_debut)}
+                      </Badge>
+                      <Badge variant="secondary">{cible(o)}</Badge>
+                      <form action={supprimerObjectif} className="ml-auto">
+                        <input type="hidden" name="id" value={o.id} />
+                        <Button variant="ghost" size="sm" type="submit" className="text-destructive">Supprimer</Button>
+                      </form>
+                    </div>
+                    <p className="whitespace-pre-wrap text-sm">{o.contenu}</p>
+                  </CardContent>
                 </Card>
               ))}
             </div>

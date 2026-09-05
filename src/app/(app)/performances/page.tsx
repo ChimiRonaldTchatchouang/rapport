@@ -1,13 +1,13 @@
+import { Sparkles, LineChart as LineIcon, Users, CheckCircle2, FileText, TriangleAlert, BarChart3 } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/legacy/card";
-import { StatCard } from "@/components/legacy/stat-card";
-import { Badge } from "@/components/legacy/badge";
-import { Button } from "@/components/legacy/button";
-import { Select, Input } from "@/components/legacy/field";
-import { EmptyState } from "@/components/legacy/empty";
-import { Icon } from "@/components/icons";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { LineChart, type LinePoint } from "@/components/charts/line-chart";
 import { Sparkline } from "@/components/charts/sparkline";
 import { CriteresCard } from "@/components/ia/criteres-card";
@@ -150,19 +150,19 @@ export default async function PerformancesPage({
               <form action={analyserRapportsDuJour}>
                 <input type="hidden" name="tout" value="1" />
                 <Button variant="secondary" size="sm" type="submit">
-                  <Icon.sparkles width={16} /> Analyser les rapports
+                  <Sparkles className="size-4" /> Analyser les rapports
                 </Button>
               </form>
               <form action={lancerAnalyse}>
                 <input type="hidden" name="type" value="hebdomadaire" />
                 <Button variant="secondary" size="sm" type="submit">
-                  <Icon.sparkles width={16} /> Bilan semaine
+                  <Sparkles className="size-4" /> Bilan semaine
                 </Button>
               </form>
               <form action={lancerAnalyse}>
                 <input type="hidden" name="type" value="mensuel" />
                 <Button size="sm" type="submit">
-                  <Icon.sparkles width={16} /> Bilan mois
+                  <Sparkles className="size-4" /> Bilan mois
                 </Button>
               </form>
             </div>
@@ -171,70 +171,82 @@ export default async function PerformancesPage({
       />
 
       {message && (
-        <p className="mb-4 rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{message}</p>
+        <p className="mb-4 rounded-md bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">{message}</p>
       )}
       {error && (
-        <p className="mb-4 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>
+        <p className="mb-4 rounded-md bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>
       )}
 
       {/* Filtres : rôle + plage de dates (impactent les graphes) */}
-      <form className="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-end">
-        <div className="sm:w-44">
-          <label className="muted mb-1 block text-xs font-medium">Rôle métier</label>
-          <Select name="role" defaultValue={roleFiltre ?? ""}>
-            <option value="">Tous les rôles</option>
-            {roles.map((r) => (
-              <option key={r.id} value={r.id}>{r.nom}</option>
-            ))}
-          </Select>
-        </div>
-        <div className="sm:w-40">
-          <label className="muted mb-1 block text-xs font-medium">Du</label>
-          <Input name="debut" type="date" defaultValue={debut ?? ""} />
-        </div>
-        <div className="sm:w-40">
-          <label className="muted mb-1 block text-xs font-medium">Au</label>
-          <Input name="fin" type="date" defaultValue={fin ?? ""} />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" size="sm" type="submit" className="w-full sm:w-auto">
-            Appliquer
-          </Button>
-          {(debut || fin || roleFiltre) && (
-            <a href="/performances" className="whitespace-nowrap text-sm text-brand-600 hover:underline">
-              Réinitialiser
-            </a>
-          )}
-        </div>
-      </form>
+      <Card className="mb-6">
+        <CardContent>
+          <form className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="sm:w-44">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Rôle métier</label>
+              <Select name="role" defaultValue={roleFiltre ?? ""}>
+                <option value="">Tous les rôles</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.id}>{r.nom}</option>
+                ))}
+              </Select>
+            </div>
+            <div className="sm:w-40">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Du</label>
+              <Input name="debut" type="date" defaultValue={debut ?? ""} />
+            </div>
+            <div className="sm:w-40">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Au</label>
+              <Input name="fin" type="date" defaultValue={fin ?? ""} />
+            </div>
+            <div className="flex items-center gap-3">
+              <Button size="sm" type="submit" className="w-full sm:w-auto">
+                Appliquer
+              </Button>
+              {(debut || fin || roleFiltre) && (
+                <a href="/performances" className="whitespace-nowrap text-sm text-primary hover:underline">
+                  Réinitialiser
+                </a>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Note moyenne" value={noteMoyenne || "—"} highlight icon={<Icon.chart width={18} />} />
-        <StatCard label="Employés" value={employes.length} icon={<Icon.users width={18} />} />
-        <StatCard label="Complétude (sem.)" value={`${completude}%`} icon={<Icon.check width={18} />} />
-        <StatCard label={`Régularité (${nbSemaines} sem.)`} value={`${regulariteMoyenne}%`} icon={<Icon.doc width={18} />} />
+        <StatCard label="Note moyenne" value={noteMoyenne || "—"} highlight icon={<LineIcon className="size-5" />} />
+        <StatCard label="Employés" value={employes.length} icon={<Users className="size-5" />} />
+        <StatCard label="Complétude (sem.)" value={`${completude}%`} icon={<CheckCircle2 className="size-5" />} />
+        <StatCard label={`Régularité (${nbSemaines} sem.)`} value={`${regulariteMoyenne}%`} icon={<FileText className="size-5" />} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader title="Vélocité de l'équipe" subtitle="Note moyenne hebdomadaire" />
-          <LineChart data={courbe} suffix="/100" />
+          <CardHeader>
+            <CardTitle>Vélocité de l&apos;équipe</CardTitle>
+            <CardDescription>Note moyenne hebdomadaire</CardDescription>
+          </CardHeader>
+          <CardContent><LineChart data={courbe} suffix="/100" /></CardContent>
         </Card>
         <Card>
-          <CardHeader title="Alertes" subtitle="Baisse ou absence de rapport" />
-          {alertes.length === 0 ? (
-            <p className="muted py-6 text-center text-sm">Aucune alerte. 🎉</p>
-          ) : (
-            <ul className="space-y-2">
-              {alertes.map((a) => (
-                <li key={a.id} className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm dark:bg-amber-500/10">
-                  <Icon.alert width={16} className="text-amber-600" />
-                  <span className="flex-1">{a.nom}</span>
-                  <Badge tone="warning">{!a.aSoumis ? "Absent" : `${a.tendance}`}</Badge>
-                </li>
-              ))}
-            </ul>
-          )}
+          <CardHeader>
+            <CardTitle>Alertes</CardTitle>
+            <CardDescription>Baisse ou absence de rapport</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {alertes.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Aucune alerte. 🎉</p>
+            ) : (
+              <ul className="space-y-2">
+                {alertes.map((a) => (
+                  <li key={a.id} className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2 text-sm dark:bg-amber-500/10">
+                    <TriangleAlert className="size-4 text-amber-600" />
+                    <span className="flex-1">{a.nom}</span>
+                    <Badge variant="warning">{!a.aSoumis ? "Absent" : `${a.tendance}`}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
         </Card>
       </div>
 
@@ -242,87 +254,100 @@ export default async function PerformancesPage({
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
-            <CardHeader
-              title="Avis de l'IA — rapports récents"
-              subtitle="Analyse individuelle de chaque rapport (même sur une journée)"
-            />
-            {avisRecents.length === 0 ? (
-              <p className="muted py-6 text-center text-sm">
-                Aucun rapport analysé. Cliquez sur « Analyser les rapports ».
-              </p>
-            ) : (
-              <div className="space-y-3">
-                {avisRecents.map((r) => (
-                  <div key={r.id}>
-                    <p className="mb-1 text-sm font-medium">
-                      {r.utilisateurs?.nom ?? "—"}
-                      <span className="muted font-normal">
-                        {" "}· {r.template_nom ?? "Rapport"} · {formatDateHeure(r.soumis_at)}
-                      </span>
-                    </p>
-                    <AvisRapportBloc
-                      note={r.note}
-                      avis={r.avis}
-                      observations={r.observations ?? []}
-                      compact
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+            <CardHeader>
+              <CardTitle>Avis de l&apos;IA — rapports récents</CardTitle>
+              <CardDescription>Analyse individuelle de chaque rapport (même sur une journée)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {avisRecents.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  Aucun rapport analysé. Cliquez sur « Analyser les rapports ».
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {avisRecents.map((r) => (
+                    <div key={r.id}>
+                      <p className="mb-1 text-sm font-medium">
+                        {r.utilisateurs?.nom ?? "—"}
+                        <span className="font-normal text-muted-foreground">
+                          {" "}· {r.template_nom ?? "Rapport"} · {formatDateHeure(r.soumis_at)}
+                        </span>
+                      </p>
+                      <AvisRapportBloc
+                        note={r.note}
+                        avis={r.avis}
+                        observations={r.observations ?? []}
+                        compact
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
           </Card>
         </div>
         <CriteresCard />
       </div>
 
       <Card className="mt-6">
-        <CardHeader title="Détail par employé" subtitle="Dernière note, tendance et régularité" />
-        {detail.length === 0 ? (
-          <EmptyState title="Aucun employé" description="Ajoutez des employés et lancez une analyse." icon="📊" />
-        ) : (
-          <div className="space-y-3">
-            {detail.map((d) => (
-              <div key={d.id} className="rounded-xl border border-[var(--border)] p-4">
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">{d.nom}</p>
-                    <p className="muted text-xs">{d.roles_metier?.nom ?? "Sans rôle"} · Régularité {d.regularite}%</p>
-                  </div>
-                  <Sparkline values={d.trend} />
-                  {d.tendance !== null && (
-                    <Badge tone={d.tendance >= 0 ? "success" : "danger"}>
-                      {d.tendance >= 0 ? "▲" : "▼"} {Math.abs(d.tendance)}
-                    </Badge>
-                  )}
-                  <span className="text-lg font-bold">
-                    {d.derniere ? `${d.derniere.note}` : "—"}
-                    <span className="muted text-sm">/100</span>
-                  </span>
-                </div>
-                {d.derniere && (d.derniere.observations.length > 0 || d.derniere.initiatives.length > 0) && (
-                  <div className="mt-3 grid gap-3 border-t border-[var(--border)] pt-3 text-sm sm:grid-cols-2">
-                    {d.derniere.observations.length > 0 && (
-                      <div>
-                        <p className="mb-1 text-xs font-semibold uppercase muted">Observations</p>
-                        <ul className="list-disc space-y-0.5 pl-4">
-                          {d.derniere.observations.map((o, i) => <li key={i}>{o}</li>)}
-                        </ul>
-                      </div>
-                    )}
-                    {d.derniere.initiatives.length > 0 && (
-                      <div>
-                        <p className="mb-1 text-xs font-semibold uppercase muted">Initiatives</p>
-                        <ul className="list-disc space-y-0.5 pl-4">
-                          {d.derniere.initiatives.map((o, i) => <li key={i}>{o}</li>)}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                )}
+        <CardHeader>
+          <CardTitle>Détail par employé</CardTitle>
+          <CardDescription>Dernière note, tendance et régularité</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {detail.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-12 text-center">
+              <BarChart3 className="size-8 text-muted-foreground" />
+              <div>
+                <p className="font-semibold">Aucun employé</p>
+                <p className="mt-1 text-sm text-muted-foreground">Ajoutez des employés et lancez une analyse.</p>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {detail.map((d) => (
+                <div key={d.id} className="rounded-lg border p-4">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{d.nom}</p>
+                      <p className="text-xs text-muted-foreground">{d.roles_metier?.nom ?? "Sans rôle"} · Régularité {d.regularite}%</p>
+                    </div>
+                    <Sparkline values={d.trend} />
+                    {d.tendance !== null && (
+                      <Badge variant={d.tendance >= 0 ? "success" : "destructive"}>
+                        {d.tendance >= 0 ? "▲" : "▼"} {Math.abs(d.tendance)}
+                      </Badge>
+                    )}
+                    <span className="text-lg font-bold">
+                      {d.derniere ? `${d.derniere.note}` : "—"}
+                      <span className="text-sm text-muted-foreground">/100</span>
+                    </span>
+                  </div>
+                  {d.derniere && (d.derniere.observations.length > 0 || d.derniere.initiatives.length > 0) && (
+                    <div className="mt-3 grid gap-3 border-t pt-3 text-sm sm:grid-cols-2">
+                      {d.derniere.observations.length > 0 && (
+                        <div>
+                          <p className="mb-1 text-xs font-semibold uppercase text-muted-foreground">Observations</p>
+                          <ul className="list-disc space-y-0.5 pl-4">
+                            {d.derniere.observations.map((o, i) => <li key={i}>{o}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                      {d.derniere.initiatives.length > 0 && (
+                        <div>
+                          <p className="mb-1 text-xs font-semibold uppercase text-muted-foreground">Initiatives</p>
+                          <ul className="list-disc space-y-0.5 pl-4">
+                            {d.derniere.initiatives.map((o, i) => <li key={i}>{o}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
       </Card>
     </>
   );

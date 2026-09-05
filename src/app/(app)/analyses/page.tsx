@@ -1,13 +1,13 @@
+import { FileText, Layers, BarChart3, Inbox } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/legacy/card";
-import { StatCard } from "@/components/legacy/stat-card";
-import { Badge } from "@/components/legacy/badge";
-import { Button } from "@/components/legacy/button";
-import { Select, Input } from "@/components/legacy/field";
-import { EmptyState } from "@/components/legacy/empty";
-import { Icon } from "@/components/icons";
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { BarList } from "@/components/charts/bar-chart";
 import { analyserReponses } from "@/lib/data/analyse";
 import { LABEL_TYPE_CHAMP } from "@/lib/types/rapport";
@@ -45,7 +45,15 @@ export default async function AnalysesPage({
     return (
       <>
         <PageHeader title="Analyses" subtitle="Réponses agrégées de vos rapports." />
-        <EmptyState title="Aucun template" description="Créez un template et collectez des rapports pour voir les analyses." icon="📊" />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <BarChart3 className="size-8 text-muted-foreground" />
+            <div>
+              <p className="font-semibold">Aucun template</p>
+              <p className="mt-1 text-sm text-muted-foreground">Créez un template et collectez des rapports pour voir les analyses.</p>
+            </div>
+          </CardContent>
+        </Card>
       </>
     );
   }
@@ -84,96 +92,109 @@ export default async function AnalysesPage({
       />
 
       {/* Filtres */}
-      <form className="card mb-6 flex flex-col gap-3 p-4 sm:flex-row sm:flex-wrap sm:items-end">
-        <div className="sm:w-56">
-          <label className="muted mb-1 block text-xs font-medium">Template</label>
-          <Select name="template" defaultValue={templateId}>
-            {templates.map((t) => (
-              <option key={t.id} value={t.id}>{t.nom}</option>
-            ))}
-          </Select>
-        </div>
-        <div className="sm:w-48">
-          <label className="muted mb-1 block text-xs font-medium">Employé</label>
-          <Select name="employe" defaultValue={employe ?? ""}>
-            <option value="">Tous</option>
-            {employes.map((e) => (
-              <option key={e.id} value={e.id}>{e.nom}</option>
-            ))}
-          </Select>
-        </div>
-        <div className="sm:w-36">
-          <label className="muted mb-1 block text-xs font-medium">Du</label>
-          <Input name="debut" type="date" defaultValue={debut ?? ""} />
-        </div>
-        <div className="sm:w-36">
-          <label className="muted mb-1 block text-xs font-medium">Au</label>
-          <Input name="fin" type="date" defaultValue={fin ?? ""} />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button variant="primary" size="sm" type="submit" className="w-full sm:w-auto">Appliquer</Button>
-          {(employe || debut || fin) && (
-            <a href={`/analyses?template=${templateId}`} className="whitespace-nowrap text-sm text-brand-600 hover:underline">Réinitialiser</a>
-          )}
-        </div>
-      </form>
+      <Card className="mb-6">
+        <CardContent>
+          <form className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="sm:w-56">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Template</label>
+              <Select name="template" defaultValue={templateId}>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.nom}</option>
+                ))}
+              </Select>
+            </div>
+            <div className="sm:w-48">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Employé</label>
+              <Select name="employe" defaultValue={employe ?? ""}>
+                <option value="">Tous</option>
+                {employes.map((e) => (
+                  <option key={e.id} value={e.id}>{e.nom}</option>
+                ))}
+              </Select>
+            </div>
+            <div className="sm:w-36">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Du</label>
+              <Input name="debut" type="date" defaultValue={debut ?? ""} />
+            </div>
+            <div className="sm:w-36">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">Au</label>
+              <Input name="fin" type="date" defaultValue={fin ?? ""} />
+            </div>
+            <div className="flex items-center gap-3">
+              <Button size="sm" type="submit" className="w-full sm:w-auto">Appliquer</Button>
+              {(employe || debut || fin) && (
+                <a href={`/analyses?template=${templateId}`} className="whitespace-nowrap text-sm text-primary hover:underline">Réinitialiser</a>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Réponses" value={rapports.length} highlight icon={<Icon.doc width={18} />} />
-        <StatCard label="Questions" value={champs.length} icon={<Icon.layers width={18} />} />
+        <StatCard label="Réponses" value={rapports.length} highlight icon={<FileText className="size-5" />} />
+        <StatCard label="Questions" value={champs.length} icon={<Layers className="size-5" />} />
       </div>
 
       {rapports.length === 0 ? (
-        <EmptyState title="Aucune réponse" description="Aucun rapport ne correspond aux filtres." icon="📭" />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <Inbox className="size-8 text-muted-foreground" />
+            <div>
+              <p className="font-semibold">Aucune réponse</p>
+              <p className="mt-1 text-sm text-muted-foreground">Aucun rapport ne correspond aux filtres.</p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {analyses.map((a) => (
             <Card key={a.champId}>
-              <CardHeader
-                title={a.label}
-                subtitle={`${LABEL_TYPE_CHAMP[a.type]} · ${a.nbReponses} réponse(s)`}
-                action={a.section ? <Badge tone="neutral">{a.section}</Badge> : undefined}
-              />
+              <CardHeader>
+                <CardTitle>{a.label}</CardTitle>
+                <CardDescription>{`${LABEL_TYPE_CHAMP[a.type]} · ${a.nbReponses} réponse(s)`}</CardDescription>
+                {a.section && <CardAction><Badge variant="secondary">{a.section}</Badge></CardAction>}
+              </CardHeader>
+              <CardContent>
+                {a.kind === "distribution" && a.distribution && (
+                  <>
+                    {a.moyenne !== undefined && (
+                      <p className="mb-3 text-sm">
+                        Moyenne : <span className="font-semibold text-primary">{a.moyenne} / 5</span>
+                      </p>
+                    )}
+                    <BarList data={a.distribution} />
+                  </>
+                )}
 
-              {a.kind === "distribution" && a.distribution && (
-                <>
-                  {a.moyenne !== undefined && (
-                    <p className="mb-3 text-sm">
-                      Moyenne : <span className="font-semibold text-brand-600">{a.moyenne} / 5</span>
+                {a.kind === "nombre" && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-md bg-muted p-3">
+                      <p className="text-xs text-muted-foreground">Total</p>
+                      <p className="text-xl font-bold">{a.total}</p>
+                    </div>
+                    <div className="rounded-md bg-muted p-3">
+                      <p className="text-xs text-muted-foreground">Moyenne</p>
+                      <p className="text-xl font-bold">{a.moyenne}</p>
+                    </div>
+                  </div>
+                )}
+
+                {a.kind === "texte" && (
+                  <div>
+                    <p className="text-sm">
+                      <span className="text-2xl font-bold">{a.nbReponses}</span>
+                      <span className="text-muted-foreground"> réponse(s) libre(s)</span>
                     </p>
-                  )}
-                  <BarList data={a.distribution} />
-                </>
-              )}
-
-              {a.kind === "nombre" && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl bg-brand-50 p-3 dark:bg-white/5">
-                    <p className="muted text-xs">Total</p>
-                    <p className="text-xl font-bold">{a.total}</p>
+                    {a.exemples && a.exemples.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        {a.exemples.map((ex, i) => (
+                          <li key={i} className="truncate">« {ex} »</li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <div className="rounded-xl bg-brand-50 p-3 dark:bg-white/5">
-                    <p className="muted text-xs">Moyenne</p>
-                    <p className="text-xl font-bold">{a.moyenne}</p>
-                  </div>
-                </div>
-              )}
-
-              {a.kind === "texte" && (
-                <div>
-                  <p className="text-sm">
-                    <span className="text-2xl font-bold">{a.nbReponses}</span>
-                    <span className="muted"> réponse(s) libre(s)</span>
-                  </p>
-                  {a.exemples && a.exemples.length > 0 && (
-                    <ul className="mt-2 space-y-1 text-sm muted">
-                      {a.exemples.map((ex, i) => (
-                        <li key={i} className="truncate">« {ex} »</li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )}
+                )}
+              </CardContent>
             </Card>
           ))}
         </div>

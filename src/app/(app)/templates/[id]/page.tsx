@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Plus } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/legacy/card";
-import { Button } from "@/components/legacy/button";
-import { Badge } from "@/components/legacy/badge";
-import { Field, Input, Select, Label } from "@/components/legacy/field";
-import { Icon } from "@/components/icons";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Field } from "@/components/ui/field";
 import { LABEL_TYPE_CHAMP } from "@/lib/types/rapport";
 import type { ChampTemplate, TemplateRapport } from "@/lib/types/rapport";
 import {
@@ -50,9 +52,9 @@ export default async function TemplateBuilderPage({
         title={tpl.nom}
         subtitle="Ajoutez, ordonnez et configurez les champs du formulaire."
         actions={
-          <Link href="/templates">
-            <Button variant="ghost" size="sm">← Retour</Button>
-          </Link>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/templates">← Retour</Link>
+          </Button>
         }
       />
 
@@ -60,107 +62,116 @@ export default async function TemplateBuilderPage({
         {/* Champs */}
         <div className="space-y-4 lg:col-span-2">
           <Card>
-            <CardHeader title="Champs du template" subtitle={`${champs.length} champ(s)`} />
-            {champs.length === 0 ? (
-              <p className="muted py-6 text-center text-sm">
-                Aucun champ. Ajoutez-en un depuis le panneau de droite.
-              </p>
-            ) : (
-              <ul className="space-y-2">
-                {champs.map((c, i) => (
-                  <li
-                    key={c.id}
-                    className="flex items-center gap-3 rounded-xl border border-[var(--border)] px-3 py-2.5"
-                  >
-                    <div className="flex flex-col">
-                      <form action={deplacerChamp}>
+            <CardHeader>
+              <CardTitle>Champs du template</CardTitle>
+              <CardDescription>{champs.length} champ(s)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {champs.length === 0 ? (
+                <p className="py-6 text-center text-sm text-muted-foreground">
+                  Aucun champ. Ajoutez-en un depuis le panneau de droite.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {champs.map((c, i) => (
+                    <li
+                      key={c.id}
+                      className="flex items-center gap-3 rounded-lg border px-3 py-2.5"
+                    >
+                      <div className="flex flex-col">
+                        <form action={deplacerChamp}>
+                          <input type="hidden" name="template_id" value={tpl.id} />
+                          <input type="hidden" name="id" value={c.id} />
+                          <input type="hidden" name="direction" value="haut" />
+                          <button type="submit" disabled={i === 0} className="text-muted-foreground disabled:opacity-30" aria-label="Monter">▲</button>
+                        </form>
+                        <form action={deplacerChamp}>
+                          <input type="hidden" name="template_id" value={tpl.id} />
+                          <input type="hidden" name="id" value={c.id} />
+                          <input type="hidden" name="direction" value="bas" />
+                          <button type="submit" disabled={i === champs.length - 1} className="text-muted-foreground disabled:opacity-30" aria-label="Descendre">▼</button>
+                        </form>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">{c.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {c.section && (
+                            <span className="mr-1 rounded bg-primary/10 px-1.5 py-0.5 text-primary">
+                              {c.section}
+                            </span>
+                          )}
+                          {LABEL_TYPE_CHAMP[c.type]}
+                          {c.options && ` · ${c.options.join(", ")}`}
+                        </p>
+                      </div>
+                      {c.obligatoire && <Badge>Obligatoire</Badge>}
+                      <form action={supprimerChamp}>
                         <input type="hidden" name="template_id" value={tpl.id} />
                         <input type="hidden" name="id" value={c.id} />
-                        <input type="hidden" name="direction" value="haut" />
-                        <button type="submit" disabled={i === 0} className="muted disabled:opacity-30" aria-label="Monter">▲</button>
+                        <button type="submit" className="text-muted-foreground hover:text-destructive" aria-label="Supprimer">✕</button>
                       </form>
-                      <form action={deplacerChamp}>
-                        <input type="hidden" name="template_id" value={tpl.id} />
-                        <input type="hidden" name="id" value={c.id} />
-                        <input type="hidden" name="direction" value="bas" />
-                        <button type="submit" disabled={i === champs.length - 1} className="muted disabled:opacity-30" aria-label="Descendre">▼</button>
-                      </form>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">{c.label}</p>
-                      <p className="muted text-xs">
-                        {c.section && (
-                          <span className="mr-1 rounded bg-brand-50 px-1.5 py-0.5 text-brand-700 dark:bg-white/10 dark:text-brand-300">
-                            {c.section}
-                          </span>
-                        )}
-                        {LABEL_TYPE_CHAMP[c.type]}
-                        {c.options && ` · ${c.options.join(", ")}`}
-                      </p>
-                    </div>
-                    {c.obligatoire && <Badge tone="brand">Obligatoire</Badge>}
-                    <form action={supprimerChamp}>
-                      <input type="hidden" name="template_id" value={tpl.id} />
-                      <input type="hidden" name="id" value={c.id} />
-                      <button type="submit" className="text-slate-400 hover:text-red-600" aria-label="Supprimer">✕</button>
-                    </form>
-                  </li>
-                ))}
-              </ul>
-            )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
           </Card>
         </div>
 
         {/* Panneau : ajouter un champ + réglages */}
         <div className="space-y-4">
           <Card>
-            <CardHeader title="Ajouter un champ" />
-            <form action={ajouterChamp} className="space-y-4">
-              <input type="hidden" name="template_id" value={tpl.id} />
-              <Field label="Label">
-                <Input name="label" required placeholder="Ex. Nombre d'appels" />
-              </Field>
-              <Field label="Type">
-                <Select name="type" defaultValue="texte_court">
-                  {Object.entries(LABEL_TYPE_CHAMP).map(([v, l]) => (
-                    <option key={v} value={v}>{l}</option>
-                  ))}
-                </Select>
-              </Field>
-              <Field label="Section" hint="(optionnel)">
-                <Input name="section" placeholder="Ex. 1 — Identification" />
-              </Field>
-              <Field label="Options" hint="(choix/cases/échelle, séparés par ,)">
-                <Input name="options" placeholder="Option A, Option B, Option C" />
-              </Field>
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="obligatoire" className="accent-brand-600" />
-                Champ obligatoire
-              </label>
-              <Button type="submit" className="w-full">
-                <Icon.plus width={18} /> Ajouter
-              </Button>
-            </form>
+            <CardHeader><CardTitle>Ajouter un champ</CardTitle></CardHeader>
+            <CardContent>
+              <form action={ajouterChamp} className="space-y-4">
+                <input type="hidden" name="template_id" value={tpl.id} />
+                <Field label="Label">
+                  <Input name="label" required placeholder="Ex. Nombre d'appels" />
+                </Field>
+                <Field label="Type">
+                  <Select name="type" defaultValue="texte_court">
+                    {Object.entries(LABEL_TYPE_CHAMP).map(([v, l]) => (
+                      <option key={v} value={v}>{l}</option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Section" hint=" (optionnel)">
+                  <Input name="section" placeholder="Ex. 1 — Identification" />
+                </Field>
+                <Field label="Options" hint=" (choix/cases/échelle, séparés par ,)">
+                  <Input name="options" placeholder="Option A, Option B, Option C" />
+                </Field>
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" name="obligatoire" className="size-4 accent-primary" />
+                  Champ obligatoire
+                </label>
+                <Button type="submit" className="w-full">
+                  <Plus className="size-4" /> Ajouter
+                </Button>
+              </form>
+            </CardContent>
           </Card>
 
           <Card>
-            <CardHeader title="Réglages" />
-            <form action={renommerTemplate} className="space-y-3">
-              <input type="hidden" name="id" value={tpl.id} />
-              <Field label="Nom">
-                <Input name="nom" defaultValue={tpl.nom} required />
-              </Field>
-              <Field label="Description">
-                <Input name="description" defaultValue={tpl.description ?? ""} />
-              </Field>
-              <Button variant="secondary" size="sm" type="submit">Enregistrer</Button>
-            </form>
-            <form action={supprimerTemplate} className="mt-4 border-t border-[var(--border)] pt-4">
-              <input type="hidden" name="id" value={tpl.id} />
-              <Button variant="ghost" size="sm" type="submit" className="text-red-600">
-                Supprimer le template
-              </Button>
-            </form>
+            <CardHeader><CardTitle>Réglages</CardTitle></CardHeader>
+            <CardContent>
+              <form action={renommerTemplate} className="space-y-3">
+                <input type="hidden" name="id" value={tpl.id} />
+                <Field label="Nom">
+                  <Input name="nom" defaultValue={tpl.nom} required />
+                </Field>
+                <Field label="Description">
+                  <Input name="description" defaultValue={tpl.description ?? ""} />
+                </Field>
+                <Button variant="secondary" size="sm" type="submit">Enregistrer</Button>
+              </form>
+              <form action={supprimerTemplate} className="mt-4 border-t pt-4">
+                <input type="hidden" name="id" value={tpl.id} />
+                <Button variant="ghost" size="sm" type="submit" className="text-destructive">
+                  Supprimer le template
+                </Button>
+              </form>
+            </CardContent>
           </Card>
         </div>
       </div>
