@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Menu, X, LogOut } from "lucide-react";
 import { Icon } from "@/components/icons";
 import { navForRole } from "@/components/app/nav-config";
 import { ChatWidget } from "@/components/ia/chat-widget";
@@ -28,7 +29,7 @@ export function AppShell({
   role: RoleSysteme;
   nom: string;
   email: string;
-  contexte?: string; // nom de l'entreprise ou "Nextiaa"
+  contexte?: string;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -47,7 +48,7 @@ export function AppShell({
       {sections.map((section, i) => (
         <div key={i}>
           {section.titre && (
-            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider muted">
+            <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               {section.titre}
             </p>
           )}
@@ -62,10 +63,10 @@ export function AppShell({
                     href={item.href}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                       active
-                        ? "bg-brand-600 text-white shadow-sm"
-                        : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/5"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                     )}
                   >
                     <item.icon width={18} height={18} />
@@ -82,7 +83,7 @@ export function AppShell({
 
   const Brand = (
     <div className="flex items-center gap-2 px-2">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <Icon.logo width={20} height={20} />
       </span>
       <span className="text-lg font-bold tracking-tight">Rapports</span>
@@ -90,21 +91,21 @@ export function AppShell({
   );
 
   const UserCard = (
-    <div className="flex items-center gap-3 rounded-xl border border-[var(--border)] p-2.5">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700 dark:bg-white/10 dark:text-brand-300">
+    <div className="flex items-center gap-3 rounded-lg border p-2.5">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
         {initiales || "?"}
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{nom}</p>
-        <p className="muted truncate text-xs">{roleLabel[role]}</p>
+        <p className="truncate text-xs text-muted-foreground">{roleLabel[role]}</p>
       </div>
       <form action={signOut}>
         <button
           type="submit"
           title="Se déconnecter"
-          className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-white/5"
+          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-destructive"
         >
-          <Icon.logout width={18} height={18} />
+          <LogOut className="size-[18px]" />
         </button>
       </form>
     </div>
@@ -113,7 +114,7 @@ export function AppShell({
   return (
     <div className="min-h-screen">
       {/* Sidebar desktop */}
-      <aside className="glass fixed inset-y-0 left-0 hidden w-64 flex-col justify-between border-r p-4 lg:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 flex-col justify-between border-r bg-card p-4 lg:flex">
         <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
           {Brand}
           {NavList}
@@ -122,16 +123,14 @@ export function AppShell({
       </aside>
 
       {/* Topbar mobile */}
-      <header className="glass sticky top-0 z-30 flex items-center justify-between border-b px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-card/80 px-4 py-3 backdrop-blur lg:hidden">
         {Brand}
         <button
           onClick={() => setOpen(true)}
-          className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-white/5"
+          className="rounded-md p-2 hover:bg-accent"
           aria-label="Ouvrir le menu"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <Menu className="size-6" />
         </button>
       </header>
 
@@ -139,12 +138,12 @@ export function AppShell({
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
-          <aside className="glass absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col justify-between border-r p-4">
+          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col justify-between border-r bg-card p-4">
             <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
               <div className="flex items-center justify-between">
                 {Brand}
-                <button onClick={() => setOpen(false)} className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-white/5" aria-label="Fermer">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+                <button onClick={() => setOpen(false)} className="rounded-md p-2 hover:bg-accent" aria-label="Fermer">
+                  <X className="size-5" />
                 </button>
               </div>
               {NavList}
@@ -158,16 +157,13 @@ export function AppShell({
       <main className="lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {contexte && (
-            <p className="muted mb-4 hidden text-sm lg:block">{contexte}</p>
+            <p className="mb-4 hidden text-sm text-muted-foreground lg:block">{contexte}</p>
           )}
           {children}
         </div>
       </main>
 
-      {/* Assistant IA flottant — réservé au manager général */}
       {role === "manager" && <ChatWidget />}
-
-      {/* Tour d'accueil à la première ouverture (par rôle) */}
       <WelcomeTour role={role} />
     </div>
   );

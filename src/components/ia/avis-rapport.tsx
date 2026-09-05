@@ -1,8 +1,8 @@
-import { Badge } from "@/components/legacy/badge";
-import { Icon } from "@/components/icons";
+import { Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-function toneNote(note: number): "success" | "warning" | "danger" {
-  return note >= 70 ? "success" : note >= 50 ? "warning" : "danger";
+function variantNote(note: number): "success" | "warning" | "destructive" {
+  return note >= 70 ? "success" : note >= 50 ? "warning" : "destructive";
 }
 
 // Avis IA d'un rapport : note + avis rédigé + observations.
@@ -19,27 +19,23 @@ export function AvisRapportBloc({
 }) {
   if (note === null && !avis) {
     return (
-      <div className="flex items-center gap-2 rounded-xl border border-dashed border-[var(--border)] px-4 py-3 text-sm muted">
-        <Icon.sparkles width={16} /> Analyse IA en attente
+      <div className="flex items-center gap-2 rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+        <Sparkles className="size-4" /> Analyse IA en attente
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-brand-100 bg-brand-50/50 p-4 dark:border-white/10 dark:bg-white/5">
+    <div className="rounded-lg border bg-secondary/40 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <span className="flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-300">
-          <Icon.sparkles width={16} /> Avis de l&apos;IA
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+          <Sparkles className="size-4" /> Avis de l&apos;IA
         </span>
-        {note !== null && (
-          <Badge tone={toneNote(note)}>
-            {note}/100
-          </Badge>
-        )}
+        {note !== null && <Badge variant={variantNote(note)}>{note}/100</Badge>}
       </div>
       {avis && <p className="text-sm">{avis}</p>}
       {!compact && observations.length > 0 && (
-        <ul className="mt-2 list-disc space-y-0.5 pl-4 text-sm muted">
+        <ul className="mt-2 list-disc space-y-0.5 pl-4 text-sm text-muted-foreground">
           {observations.map((o, i) => (
             <li key={i}>{o}</li>
           ))}

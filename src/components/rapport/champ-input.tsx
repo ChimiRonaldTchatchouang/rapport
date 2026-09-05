@@ -1,4 +1,6 @@
-import { Input, Textarea, Select } from "@/components/legacy/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select } from "@/components/ui/select";
 import type { ChampTemplate } from "@/lib/types/rapport";
 
 // Rend l'input adapté au type de champ (formulaire de rapport dynamique).
@@ -16,7 +18,7 @@ export function ChampInput({ champ }: { champ: ChampTemplate }) {
     case "case_a_cocher":
       return (
         <label className="inline-flex items-center gap-2 text-sm">
-          <input type="checkbox" name={name} className="h-4 w-4 accent-brand-600" />
+          <input type="checkbox" name={name} className="size-4 accent-primary" />
           Oui
         </label>
       );
@@ -37,8 +39,11 @@ export function ChampInput({ champ }: { champ: ChampTemplate }) {
       return (
         <div className="space-y-2">
           {(champ.options ?? []).map((o) => (
-            <label key={o} className="flex items-center gap-2 rounded-xl border border-[var(--border)] px-3 py-2 text-sm has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50 dark:has-[:checked]:bg-brand-500/10">
-              <input type="checkbox" name={name} value={o} className="h-4 w-4 accent-brand-600" />
+            <label
+              key={o}
+              className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-accent"
+            >
+              <input type="checkbox" name={name} value={o} className="size-4 accent-primary" />
               {o}
             </label>
           ))}
@@ -52,7 +57,7 @@ export function ChampInput({ champ }: { champ: ChampTemplate }) {
             {[1, 2, 3, 4, 5].map((n) => (
               <label
                 key={n}
-                className="flex-1 cursor-pointer rounded-xl border border-[var(--border)] py-2.5 text-center text-sm font-medium has-[:checked]:border-brand-500 has-[:checked]:bg-brand-600 has-[:checked]:text-white"
+                className="flex-1 cursor-pointer rounded-md border py-2.5 text-center text-sm font-medium has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground"
               >
                 <input type="radio" name={name} value={n} required={req} className="sr-only" />
                 {n}
@@ -60,7 +65,7 @@ export function ChampInput({ champ }: { champ: ChampTemplate }) {
             ))}
           </div>
           {labels.length >= 2 && (
-            <div className="mt-1 flex justify-between text-xs muted">
+            <div className="mt-1 flex justify-between text-xs text-muted-foreground">
               <span>{labels[0]}</span>
               <span>{labels[labels.length - 1]}</span>
             </div>
@@ -68,7 +73,7 @@ export function ChampInput({ champ }: { champ: ChampTemplate }) {
         </div>
       );
     }
-    default: // texte_court
+    default:
       return <Input name={name} required={req} placeholder="Votre réponse…" />;
   }
 }

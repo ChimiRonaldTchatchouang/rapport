@@ -1,4 +1,4 @@
-import { Badge } from "@/components/legacy/badge";
+import { Badge } from "@/components/ui/badge";
 import { valeurLisible, type ValeurChamp } from "@/lib/types/rapport";
 import { formatDateHeure } from "@/lib/utils";
 
@@ -31,11 +31,11 @@ export function RapportView({
     <div>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <h3 className="text-lg font-semibold">{templateNom ?? "Rapport"}</h3>
-        <Badge tone={source === "email" ? "info" : "brand"}>
+        <Badge variant={source === "email" ? "secondary" : "default"}>
           {source === "email" ? "Reçu par email" : "Via l'app"}
         </Badge>
       </div>
-      <p className="muted mb-4 text-sm">
+      <p className="mb-4 text-sm text-muted-foreground">
         {auteur && <>Par {auteur} · </>}
         Soumis le {formatDateHeure(soumisAt)}
       </p>
@@ -43,17 +43,17 @@ export function RapportView({
       {grouperParSection(contenu).map((g, gi) => (
         <div key={gi} className="mb-4 last:mb-0">
           {g.section && (
-            <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-600">
+            <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
               {g.section}
             </h4>
           )}
-          <dl className="overflow-hidden rounded-xl border border-[var(--border)]">
+          <dl className="overflow-hidden rounded-lg border">
             {g.items.map((c, i) => (
               <div
                 key={c.champ_id + i}
-                className="grid grid-cols-1 gap-1 border-b border-[var(--border)] px-4 py-3 last:border-0 sm:grid-cols-3"
+                className="grid grid-cols-1 gap-1 border-b px-4 py-3 last:border-0 sm:grid-cols-3"
               >
-                <dt className="muted text-sm">{c.label}</dt>
+                <dt className="text-sm text-muted-foreground">{c.label}</dt>
                 <dd className="text-sm font-medium sm:col-span-2">{valeurLisible(c)}</dd>
               </div>
             ))}
