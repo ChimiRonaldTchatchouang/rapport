@@ -1,12 +1,11 @@
 import Link from "next/link";
+import { FileText, Check } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/legacy/card";
-import { Button } from "@/components/legacy/button";
-import { Label } from "@/components/legacy/field";
-import { EmptyState } from "@/components/legacy/empty";
-import { Icon } from "@/components/icons";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { ChampInput } from "@/components/rapport/champ-input";
 import type { ChampTemplate, TemplateRapport } from "@/lib/types/rapport";
 import { soumettreRapport } from "./actions";
@@ -36,11 +35,17 @@ export default async function NouveauRapportPage({
     return (
       <>
         <PageHeader title="Nouveau rapport" />
-        <EmptyState
-          title="Aucun rapport à remplir"
-          description="Votre manager ne vous a pas encore assigné de rôle avec un template. Contactez-le."
-          icon="📝"
-        />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <FileText className="size-8 text-muted-foreground" />
+            <div>
+              <p className="font-semibold">Aucun rapport à remplir</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Votre manager ne vous a pas encore assigné de rôle avec un template. Contactez-le.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </>
     );
   }
@@ -55,12 +60,14 @@ export default async function NouveauRapportPage({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {templates.map((t) => (
             <Link key={t.id} href={`/nouveau-rapport?template=${t.id}`}>
-              <Card className="h-full transition hover:border-brand-400 hover:shadow-md">
-                <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-600 dark:bg-white/5">
-                  <Icon.doc width={20} />
-                </span>
-                <h3 className="font-semibold">{t.nom}</h3>
-                {t.description && <p className="muted mt-1 text-sm">{t.description}</p>}
+              <Card className="h-full transition hover:border-primary hover:shadow-md">
+                <CardContent>
+                  <span className="mb-3 flex size-10 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <FileText className="size-5" />
+                  </span>
+                  <h3 className="font-semibold">{t.nom}</h3>
+                  {t.description && <p className="mt-1 text-sm text-muted-foreground">{t.description}</p>}
+                </CardContent>
               </Card>
             </Link>
           ))}
@@ -92,62 +99,67 @@ export default async function NouveauRapportPage({
         subtitle="Remplissez et soumettez votre rapport."
         actions={
           templates.length > 1 ? (
-            <Link href="/nouveau-rapport">
-              <Button variant="ghost" size="sm">← Changer de type</Button>
-            </Link>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/nouveau-rapport">← Changer de type</Link>
+            </Button>
           ) : null
         }
       />
 
       {error && (
-        <p className="mb-4 rounded-xl bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>
+        <p className="mb-4 rounded-md bg-red-50 px-4 py-2.5 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">{error}</p>
       )}
 
       {similaire && (
-        <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
           ⚠️ Ce rapport ressemble beaucoup à votre précédent. Vérifiez son contenu,
           puis cochez la confirmation en bas pour le soumettre quand même.
         </div>
       )}
 
       <Card className="mx-auto max-w-2xl">
-        <CardHeader title="Formulaire" subtitle={`${champs.length} champ(s)`} />
-        <form action={soumettreRapport} className="space-y-5">
-          <input type="hidden" name="template_id" value={templateId} />
+        <CardHeader>
+          <CardTitle>Formulaire</CardTitle>
+          <CardDescription>{champs.length} champ(s)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={soumettreRapport} className="space-y-5">
+            <input type="hidden" name="template_id" value={templateId} />
 
-          {groupes.map((g, gi) => (
-            <div key={gi} className="space-y-5">
-              {g.section && (
-                <h3 className="border-b border-[var(--border)] pb-2 text-sm font-semibold uppercase tracking-wide text-brand-600">
-                  {g.section}
-                </h3>
-              )}
-              {g.items.map((c) => (
-                <div key={c.id}>
-                  <Label>
-                    {c.label}
-                    {c.obligatoire && <span className="ml-1 text-red-500">*</span>}
-                  </Label>
-                  <ChampInput champ={c} />
-                </div>
-              ))}
+            {groupes.map((g, gi) => (
+              <div key={gi} className="space-y-5">
+                {g.section && (
+                  <h3 className="border-b pb-2 text-sm font-semibold uppercase tracking-wide text-primary">
+                    {g.section}
+                  </h3>
+                )}
+                {g.items.map((c) => (
+                  <div key={c.id}>
+                    <Label className="mb-1.5">
+                      {c.label}
+                      {c.obligatoire && <span className="ml-1 text-destructive">*</span>}
+                    </Label>
+                    <ChampInput champ={c} />
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            {similaire && (
+              <label className="flex items-center gap-2 rounded-md bg-amber-50 px-3 py-2.5 text-sm dark:bg-amber-500/10">
+                <input type="checkbox" name="confirmer_similaire" value="1" required className="size-4 accent-amber-600" />
+                Je confirme que ce rapport est bien distinct.
+              </label>
+            )}
+
+            <div className="flex items-center justify-between border-t pt-4">
+              <p className="text-xs text-muted-foreground">L&apos;heure de soumission est enregistrée automatiquement.</p>
+              <Button type="submit">
+                <Check className="size-4" /> Soumettre
+              </Button>
             </div>
-          ))}
-
-          {similaire && (
-            <label className="flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-sm dark:bg-amber-500/10">
-              <input type="checkbox" name="confirmer_similaire" value="1" required className="accent-amber-600" />
-              Je confirme que ce rapport est bien distinct.
-            </label>
-          )}
-
-          <div className="flex items-center justify-between border-t border-[var(--border)] pt-4">
-            <p className="muted text-xs">L'heure de soumission est enregistrée automatiquement.</p>
-            <Button type="submit">
-              <Icon.check width={18} /> Soumettre
-            </Button>
-          </div>
-        </form>
+          </form>
+        </CardContent>
       </Card>
     </>
   );

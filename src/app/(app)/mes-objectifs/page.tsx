@@ -1,9 +1,9 @@
+import { Target } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card } from "@/components/legacy/card";
-import { Badge } from "@/components/legacy/badge";
-import { EmptyState } from "@/components/legacy/empty";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 import { semaine, isoDate } from "@/lib/data/periodes";
 import type { Objectif } from "@/lib/types/database";
@@ -45,30 +45,38 @@ export default async function MesObjectifsPage() {
       />
 
       {pertinents.length === 0 ? (
-        <EmptyState
-          title="Aucun objectif"
-          description="Votre manager n'a pas encore défini d'objectif vous concernant."
-          icon="🎯"
-        />
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
+            <Target className="size-8 text-muted-foreground" />
+            <div>
+              <p className="font-semibold">Aucun objectif</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Votre manager n&apos;a pas encore défini d&apos;objectif vous concernant.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-6">
           {[...groupes.entries()].map(([sem, liste]) => (
             <div key={sem}>
               <div className="mb-2 flex items-center gap-2">
-                <h2 className="text-sm font-semibold uppercase tracking-wide muted">
+                <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Semaine du {formatDate(sem)}
                 </h2>
-                {sem === semaineCourante && <Badge tone="brand">En cours</Badge>}
+                {sem === semaineCourante && <Badge>En cours</Badge>}
               </div>
               <div className="space-y-3">
                 {liste.map((o) => (
                   <Card key={o.id}>
-                    <div className="mb-2">
-                      <Badge tone="info">
-                        {o.equipe_id ? "Mon équipe" : o.role_metier_id ? "Mon rôle" : "Toute l'entreprise"}
-                      </Badge>
-                    </div>
-                    <p className="whitespace-pre-wrap text-sm">{o.contenu}</p>
+                    <CardContent>
+                      <div className="mb-2">
+                        <Badge variant="secondary">
+                          {o.equipe_id ? "Mon équipe" : o.role_metier_id ? "Mon rôle" : "Toute l'entreprise"}
+                        </Badge>
+                      </div>
+                      <p className="whitespace-pre-wrap text-sm">{o.contenu}</p>
+                    </CardContent>
                   </Card>
                 ))}
               </div>

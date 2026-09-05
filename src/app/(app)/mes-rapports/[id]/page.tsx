@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Download } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card } from "@/components/legacy/card";
-import { Button, ButtonLink } from "@/components/legacy/button";
-import { Icon } from "@/components/icons";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { RapportView } from "@/components/rapport/rapport-view";
 import type { Rapport, ValeurChamp } from "@/lib/types/rapport";
 
@@ -34,22 +34,26 @@ export default async function MonRapportPage({
         title="Détail du rapport"
         actions={
           <div className="flex gap-2">
-            <Link href="/mes-rapports">
-              <Button variant="ghost" size="sm">← Retour</Button>
-            </Link>
-            <ButtonLink href={`/api/rapport/${rapport.id}/pdf`} target="_blank" variant="secondary" size="sm">
-              <Icon.download width={16} /> PDF
-            </ButtonLink>
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/mes-rapports">← Retour</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <a href={`/api/rapport/${rapport.id}/pdf`} target="_blank" rel="noreferrer">
+                <Download className="size-4" /> PDF
+              </a>
+            </Button>
           </div>
         }
       />
       <Card className="mx-auto max-w-2xl">
-        <RapportView
-          templateNom={rapport.template_nom}
-          contenu={rapport.contenu as ValeurChamp[]}
-          soumisAt={rapport.soumis_at}
-          source={rapport.source}
-        />
+        <CardContent>
+          <RapportView
+            templateNom={rapport.template_nom}
+            contenu={rapport.contenu as ValeurChamp[]}
+            soumisAt={rapport.soumis_at}
+            source={rapport.source}
+          />
+        </CardContent>
       </Card>
     </>
   );

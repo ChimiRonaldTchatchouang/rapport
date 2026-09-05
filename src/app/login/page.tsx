@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/permissions";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Field } from "@/components/ui/field";
 import { signIn } from "./actions";
 
 // Page de connexion (email / mot de passe).
@@ -19,63 +23,42 @@ export default async function LoginPage({
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-6">
       <div className="space-y-1 text-center">
         <h1 className="text-2xl font-bold">Connexion</h1>
-        <p className="text-sm opacity-70">Accédez à votre espace de rapports.</p>
+        <p className="text-sm text-muted-foreground">Accédez à votre espace de rapports.</p>
       </div>
 
       {message && (
-        <p className="rounded-lg bg-emerald-50 px-4 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+        <p className="rounded-md bg-emerald-50 px-4 py-2 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
           {message}
         </p>
       )}
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+        <p className="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
           {error}
         </p>
       )}
 
-      <form action={signIn} className="space-y-4">
-        <input type="hidden" name="redirectTo" value={redirectTo ?? "/dashboard"} />
+      <Card>
+        <CardContent className="p-6">
+          <form action={signIn} className="space-y-4">
+            <input type="hidden" name="redirectTo" value={redirectTo ?? "/dashboard"} />
 
-        <div className="space-y-1">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            className="w-full rounded-lg border border-current/20 bg-transparent px-3 py-2 outline-none focus:border-blue-500"
-          />
-        </div>
+            <Field label="Email">
+              <Input id="email" name="email" type="email" required autoComplete="email" />
+            </Field>
 
-        <div className="space-y-1">
-          <label htmlFor="password" className="text-sm font-medium">
-            Mot de passe
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            autoComplete="current-password"
-            className="w-full rounded-lg border border-current/20 bg-transparent px-3 py-2 outline-none focus:border-blue-500"
-          />
-        </div>
+            <Field label="Mot de passe">
+              <Input id="password" name="password" type="password" required autoComplete="current-password" />
+            </Field>
 
-        <button
-          type="submit"
-          className="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-medium text-white transition hover:bg-blue-700"
-        >
-          Se connecter
-        </button>
-      </form>
+            <Button type="submit" className="w-full">Se connecter</Button>
+          </form>
+        </CardContent>
+      </Card>
 
-      <p className="text-center text-sm opacity-70">
+      <p className="text-center text-sm text-muted-foreground">
         Nouvelle entreprise ?{" "}
-        <Link href="/activation" className="text-blue-600 hover:underline">
+        <Link href="/activation" className="text-primary hover:underline">
           Activer une licence
         </Link>
       </p>
