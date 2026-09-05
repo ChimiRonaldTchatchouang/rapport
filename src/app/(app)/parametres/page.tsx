@@ -1,10 +1,10 @@
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Field, Input, Textarea } from "@/components/ui/field";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader } from "@/components/legacy/card";
+import { Button } from "@/components/legacy/button";
+import { Field, Input, Textarea } from "@/components/legacy/field";
+import { Badge } from "@/components/legacy/badge";
 import { LABEL_STATUT, toneStatut, statutEffectif, joursAvantExpiration } from "@/lib/licence";
 import { formatDate } from "@/lib/utils";
 import { Icon } from "@/components/icons";

@@ -1,11 +1,11 @@
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Field, Textarea, Select, Input } from "@/components/ui/field";
-import { EmptyState } from "@/components/ui/empty";
+import { Card, CardHeader } from "@/components/legacy/card";
+import { Button } from "@/components/legacy/button";
+import { Badge } from "@/components/legacy/badge";
+import { Field, Textarea, Select, Input } from "@/components/legacy/field";
+import { EmptyState } from "@/components/legacy/empty";
 import { Icon } from "@/components/icons";
 import { formatDate } from "@/lib/utils";
 import { semaine, isoDate } from "@/lib/data/periodes";

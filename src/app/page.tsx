@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/permissions";
 import { Icon } from "@/components/icons";
-import { ButtonLink } from "@/components/ui/button";
+import { ButtonLink } from "@/components/legacy/button";
 
 const atouts = [
   { icon: Icon.doc, titre: "Rapports structurés", texte: "Des formulaires sur-mesure par métier, remplis en quelques secondes." },

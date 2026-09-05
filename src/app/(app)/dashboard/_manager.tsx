@@ -1,9 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { StatCard } from "@/components/ui/stat-card";
-import { Card, CardHeader } from "@/components/ui/card";
-import { ButtonLink } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { StatCard } from "@/components/legacy/stat-card";
+import { Card, CardHeader } from "@/components/legacy/card";
+import { ButtonLink } from "@/components/legacy/button";
+import { Badge } from "@/components/legacy/badge";
 import { Icon } from "@/components/icons";
 import { LineChart, type LinePoint } from "@/components/charts/line-chart";
 import { AvisRapportBloc } from "@/components/ia/avis-rapport";

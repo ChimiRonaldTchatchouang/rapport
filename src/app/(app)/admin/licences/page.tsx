@@ -1,28 +1,34 @@
+import { KeyRound, CheckCircle2, TriangleAlert, Building2, Plus } from "lucide-react";
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/field";
-import { Icon } from "@/components/icons";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatDate } from "@/lib/utils";
-import {
-  LABEL_STATUT,
-  toneStatut,
-  statutEffectif,
-  joursAvantExpiration,
-} from "@/lib/licence";
+import { LABEL_STATUT, statutEffectif, joursAvantExpiration } from "@/lib/licence";
+import { badgeStatut } from "@/lib/ui/statut";
 import type { Licence } from "@/lib/types/database";
-import {
-  genererLicence,
-  suspendreLicence,
-  revoquerLicence,
-  reactiverLicence,
-} from "./actions";
+import { genererLicence, suspendreLicence, revoquerLicence, reactiverLicence } from "./actions";
 
 type LicenceRow = Licence & { entreprises: { nom: string } | null };
+
+function Stat({ label, value, icon, primary = false }: { label: string; value: React.ReactNode; icon: React.ReactNode; primary?: boolean }) {
+  return (
+    <Card className={primary ? "gap-2 border-transparent bg-primary py-4 text-primary-foreground" : "gap-2 py-4"}>
+      <CardContent className="flex items-center justify-between">
+        <div>
+          <p className={primary ? "text-sm text-primary-foreground/80" : "text-sm text-muted-foreground"}>{label}</p>
+          <p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
+        </div>
+        <span className={primary ? "text-primary-foreground/70" : "text-muted-foreground"}>{icon}</span>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default async function LicencesPage() {
   await requireRole("super_admin");
@@ -34,89 +40,87 @@ export default async function LicencesPage() {
     .order("date_creation", { ascending: false });
 
   const licences = (data as LicenceRow[]) ?? [];
-
   const total = licences.length;
   const actives = licences.filter((l) => statutEffectif(l) === "active").length;
-  const bientotExpirees = licences.filter((l) => {
+  const bientot = licences.filter((l) => {
     const j = joursAvantExpiration(l);
     return statutEffectif(l) === "active" && j !== null && j <= 30 && j >= 0;
   }).length;
 
   return (
     <>
-      <PageHeader
-        title="Licences"
-        subtitle="Générez et pilotez les licences des entreprises clientes."
-      />
+      <PageHeader title="Licences" subtitle="Générez et pilotez les licences des entreprises clientes." />
 
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Total licences" value={total} icon={<Icon.key width={18} />} highlight />
-        <StatCard label="Actives" value={actives} icon={<Icon.check width={18} />} />
-        <StatCard label="Expirent < 30j" value={bientotExpirees} icon={<Icon.alert width={18} />} />
-        <StatCard label="Entreprises" value={licences.filter((l) => l.entreprise_id).length} icon={<Icon.briefcase width={18} />} />
+        <Stat primary label="Total licences" value={total} icon={<KeyRound className="size-5" />} />
+        <Stat label="Actives" value={actives} icon={<CheckCircle2 className="size-5" />} />
+        <Stat label="Expirent < 30j" value={bientot} icon={<TriangleAlert className="size-5" />} />
+        <Stat label="Entreprises" value={licences.filter((l) => l.entreprise_id).length} icon={<Building2 className="size-5" />} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Générateur */}
         <Card className="lg:col-span-1">
-          <CardHeader title="Nouvelle licence" subtitle="Valable 1 an dès l'activation." />
-          <form action={genererLicence} className="space-y-4">
-            <Field label="Entreprise cible" hint="(optionnel)">
-              <Input name="entreprise_cible_nom" placeholder="Ex. Acme SARL" />
-            </Field>
-            <Field label="Email de contact" hint="(optionnel)">
-              <Input name="contact_prevu_email" type="email" placeholder="contact@acme.com" />
-            </Field>
-            <Button type="submit" className="w-full">
-              <Icon.plus width={18} /> Générer une clé
-            </Button>
-          </form>
+          <CardHeader>
+            <CardTitle>Nouvelle licence</CardTitle>
+            <CardDescription>Valable 1 an dès l&apos;activation.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={genererLicence} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="cible">Entreprise cible <span className="text-muted-foreground">(optionnel)</span></Label>
+                <Input id="cible" name="entreprise_cible_nom" placeholder="Ex. Acme SARL" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="contact">Email de contact <span className="text-muted-foreground">(optionnel)</span></Label>
+                <Input id="contact" name="contact_prevu_email" type="email" placeholder="contact@acme.com" />
+              </div>
+              <Button type="submit" className="w-full"><Plus className="size-4" /> Générer une clé</Button>
+            </form>
+          </CardContent>
         </Card>
 
-        {/* Liste */}
-        <Card className="overflow-hidden lg:col-span-2">
-          <CardHeader title="Toutes les licences" subtitle={`${total} licence(s)`} />
-          {licences.length === 0 ? (
-            <p className="muted py-8 text-center text-sm">Aucune licence générée.</p>
-          ) : (
-            <div className="-mx-2 overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[var(--border)] text-left muted">
-                    <th className="px-2 py-2 font-medium">Clé / Entreprise</th>
-                    <th className="px-2 py-2 font-medium">Statut</th>
-                    <th className="px-2 py-2 font-medium">Expiration</th>
-                    <th className="px-2 py-2 font-medium"></th>
-                  </tr>
-                </thead>
-                <tbody>
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Toutes les licences</CardTitle>
+            <CardDescription>{total} licence(s)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {licences.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">Aucune licence générée.</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Clé / Entreprise</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Expiration</TableHead>
+                    <TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {licences.map((l) => {
                     const statut = statutEffectif(l);
                     const jours = joursAvantExpiration(l);
                     return (
-                      <tr key={l.id} className="border-b border-[var(--border)] last:border-0">
-                        <td className="px-2 py-3">
+                      <TableRow key={l.id}>
+                        <TableCell>
                           <p className="font-mono text-xs font-semibold">{l.cle_unique}</p>
-                          <p className="muted text-xs">
-                            {l.entreprises?.nom ?? l.entreprise_cible_nom ?? "— non activée"}
-                          </p>
-                        </td>
-                        <td className="px-2 py-3">
-                          <Badge tone={toneStatut(statut)}>{LABEL_STATUT[statut]}</Badge>
-                        </td>
-                        <td className="px-2 py-3">
+                          <p className="text-xs text-muted-foreground">{l.entreprises?.nom ?? l.entreprise_cible_nom ?? "— non activée"}</p>
+                        </TableCell>
+                        <TableCell><Badge variant={badgeStatut(statut)}>{LABEL_STATUT[statut]}</Badge></TableCell>
+                        <TableCell>
                           {l.date_expiration ? (
                             <span className={jours !== null && jours <= 30 ? "text-amber-600" : ""}>
                               {formatDate(l.date_expiration)}
                               {jours !== null && jours >= 0 && jours <= 30 && (
-                                <span className="muted block text-xs">dans {jours}j</span>
+                                <span className="block text-xs text-muted-foreground">dans {jours}j</span>
                               )}
                             </span>
                           ) : (
-                            <span className="muted">—</span>
+                            <span className="text-muted-foreground">—</span>
                           )}
-                        </td>
-                        <td className="px-2 py-3 text-right">
+                        </TableCell>
+                        <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
                             {l.statut === "active" && (
                               <form action={suspendreLicence}>
@@ -133,20 +137,18 @@ export default async function LicencesPage() {
                             {l.statut !== "revoquee" && (
                               <form action={revoquerLicence}>
                                 <input type="hidden" name="id" value={l.id} />
-                                <Button variant="ghost" size="sm" type="submit" className="text-red-600">
-                                  Révoquer
-                                </Button>
+                                <Button variant="ghost" size="sm" type="submit" className="text-destructive">Révoquer</Button>
                               </form>
                             )}
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     );
                   })}
-                </tbody>
-              </table>
-            </div>
-          )}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
         </Card>
       </div>
     </>

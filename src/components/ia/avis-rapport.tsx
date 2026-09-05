@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/legacy/badge";
 import { Icon } from "@/components/icons";
 
 function toneNote(note: number): "success" | "warning" | "danger" {

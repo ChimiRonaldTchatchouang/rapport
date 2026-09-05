@@ -1,8 +1,10 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 /* ==========================================================================
-   Design system — Glassmorphism (palette indigo conservée).
-   Fond à halos dégradés + surfaces en verre dépoli (translucide + flou).
+   Design system — base shadcn/ui + fond à halos dégradés léger.
+   La palette "brand" (indigo) et les classes legacy (.card/.glass) sont
+   conservées le temps de migrer chaque portail vers shadcn.
    ========================================================================== */
 @theme {
   --color-brand-50: #eef2ff;
@@ -19,14 +21,60 @@
   --radius-card: 1.25rem;
 }
 
-:root {
-  --bg: #e7ebf5;
-  --surface: #ffffff; /* fond opaque pour les inputs */
-  --text: #0f172a;
-  --muted: #566072;
-  --border: #e3e7f0; /* dividers & bordures d'inputs (ligne visible) */
+/* Mapping des tokens shadcn -> utilitaires Tailwind (bg-background, bg-card…) */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 
-  /* Verre — givré prononcé */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* shadcn (clair) */
+  --background: #f6f7fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f6;
+  --secondary-foreground: #1e293b;
+  --muted: #eef1f6;
+  --muted-foreground: #64748b;
+  --accent: #eef2ff;
+  --accent-foreground: #3730a3;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e5e8f0;
+  --input: #e5e8f0;
+  --ring: #6366f1;
+
+  /* legacy (verre) — conservé le temps de la migration */
+  --surface: #ffffff;
   --glass-bg: rgba(255, 255, 255, 0.62);
   --glass-strong: rgba(255, 255, 255, 0.80);
   --glass-border: rgba(255, 255, 255, 0.80);
@@ -37,51 +85,60 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0a0f1e;
-    --surface: #131a2b;
-    --text: #e6eaf3;
-    --muted: #9aa5b8;
+    --background: #0a0f1e;
+    --foreground: #e6eaf3;
+    --card: #131a2b;
+    --card-foreground: #e6eaf3;
+    --popover: #131a2b;
+    --popover-foreground: #e6eaf3;
+    --primary: #6366f1;
+    --primary-foreground: #ffffff;
+    --secondary: #1e293b;
+    --secondary-foreground: #e6eaf3;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #1e293b;
+    --accent-foreground: #e6eaf3;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
     --border: #26304a;
+    --input: #26304a;
+    --ring: #6366f1;
 
+    --surface: #131a2b;
     --glass-bg: rgba(23, 30, 48, 0.60);
     --glass-strong: rgba(23, 30, 48, 0.82);
     --glass-border: rgba(255, 255, 255, 0.14);
-    --glass-shadow: 0 12px 40px -14px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 12px 40px -14px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 }
-:root[data-theme="dark"] {
-  --bg: #0a0f1e;
-  --surface: #131a2b;
-  --text: #e6eaf3;
-  --muted: #9aa5b8;
-  --border: #26304a;
-  --glass-bg: rgba(23, 30, 48, 0.60);
-  --glass-strong: rgba(23, 30, 48, 0.82);
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-shadow: 0 12px 40px -14px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+* {
+  border-color: var(--border);
 }
 
 html,
 body {
-  color: var(--text);
+  color: var(--foreground);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Fond décoratif fixe : halos indigo/violet/cyan derrière le verre. */
+/* Fond : couleur shadcn + halos dégradés légers */
 body {
   min-height: 100vh;
-  background-color: var(--bg);
+  background-color: var(--background);
   background-image:
-    radial-gradient(38rem 38rem at 8% -5%, rgba(99, 102, 241, 0.26), transparent 60%),
-    radial-gradient(34rem 34rem at 100% 8%, rgba(139, 92, 246, 0.24), transparent 60%),
-    radial-gradient(40rem 40rem at 50% 110%, rgba(56, 189, 248, 0.18), transparent 60%);
+    radial-gradient(42rem 42rem at 8% -8%, rgba(99, 102, 241, 0.10), transparent 60%),
+    radial-gradient(36rem 36rem at 100% 4%, rgba(139, 92, 246, 0.09), transparent 60%),
+    radial-gradient(44rem 44rem at 50% 112%, rgba(56, 189, 248, 0.07), transparent 60%);
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
 
-/* Carte en verre dépoli (givré prononcé) */
+/* ---- legacy (verre) : conservé pour les portails pas encore migrés ---- */
 .card {
   background: var(--glass-bg);
   -webkit-backdrop-filter: blur(var(--blur)) saturate(1.7) brightness(1.06);
@@ -90,17 +147,14 @@ body {
   border-radius: var(--radius-card);
   box-shadow: var(--glass-shadow);
 }
-
-/* Surface verre réutilisable (sidebar, topbar, panneaux) */
 .glass {
   background: var(--glass-strong);
   -webkit-backdrop-filter: blur(calc(var(--blur) + 4px)) saturate(1.7) brightness(1.06);
   backdrop-filter: blur(calc(var(--blur) + 4px)) saturate(1.7) brightness(1.06);
   border-color: var(--glass-border);
 }
-
 .muted {
-  color: var(--muted);
+  color: var(--muted-foreground);
 }
 
 /* Scrollbar discrète */
@@ -109,13 +163,12 @@ body {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--muted) 30%, transparent);
+  background: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
   border-radius: 999px;
   border: 3px solid transparent;
   background-clip: content-box;
 }
 
-/* Respecte la préférence de réduction d'animations */
 @media (prefers-reduced-motion: reduce) {
   * {
     transition-duration: 0.01ms !important;

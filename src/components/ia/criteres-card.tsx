@@ -1,4 +1,4 @@
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/legacy/card";
 import { Icon } from "@/components/icons";
 import { CRITERES_NOTATION } from "@/lib/ia/criteres";
 

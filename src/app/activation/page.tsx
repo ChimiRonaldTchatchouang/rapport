@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import { Field, Input } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
+import { Field, Input } from "@/components/legacy/field";
+import { Button } from "@/components/legacy/button";
 import { activerLicence } from "./actions";
 
 // Activation d'une licence : l'entreprise crée son compte + son 1er manager.

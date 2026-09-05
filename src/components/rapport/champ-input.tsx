@@ -1,4 +1,4 @@
-import { Input, Textarea, Select } from "@/components/ui/field";
+import { Input, Textarea, Select } from "@/components/legacy/field";
 import type { ChampTemplate } from "@/lib/types/rapport";
 
 // Rend l'input adapté au type de champ (formulaire de rapport dynamique).

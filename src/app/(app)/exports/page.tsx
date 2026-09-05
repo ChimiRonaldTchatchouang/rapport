@@ -1,9 +1,9 @@
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Field, Input } from "@/components/ui/field";
-import { EmptyState } from "@/components/ui/empty";
+import { Card, CardHeader } from "@/components/legacy/card";
+import { Field, Input } from "@/components/legacy/field";
+import { EmptyState } from "@/components/legacy/empty";
 import { Icon } from "@/components/icons";
 import type { TemplateRapport } from "@/lib/types/rapport";
 

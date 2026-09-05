@@ -1,12 +1,12 @@
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card, CardHeader } from "@/components/ui/card";
-import { StatCard } from "@/components/ui/stat-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, Input } from "@/components/ui/field";
-import { EmptyState } from "@/components/ui/empty";
+import { Card, CardHeader } from "@/components/legacy/card";
+import { StatCard } from "@/components/legacy/stat-card";
+import { Badge } from "@/components/legacy/badge";
+import { Button } from "@/components/legacy/button";
+import { Select, Input } from "@/components/legacy/field";
+import { EmptyState } from "@/components/legacy/empty";
 import { Icon } from "@/components/icons";
 import { LineChart, type LinePoint } from "@/components/charts/line-chart";
 import { Sparkline } from "@/components/charts/sparkline";

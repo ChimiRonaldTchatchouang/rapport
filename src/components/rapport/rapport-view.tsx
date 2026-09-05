@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/legacy/badge";
 import { valeurLisible, type ValeurChamp } from "@/lib/types/rapport";
 import { formatDateHeure } from "@/lib/utils";
 

@@ -1,9 +1,9 @@
 import { requireRole } from "@/lib/auth/permissions";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/app/page-header";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui/empty";
+import { Card } from "@/components/legacy/card";
+import { Badge } from "@/components/legacy/badge";
+import { EmptyState } from "@/components/legacy/empty";
 import { formatDate } from "@/lib/utils";
 import { semaine, isoDate } from "@/lib/data/periodes";
 import type { Objectif } from "@/lib/types/database";

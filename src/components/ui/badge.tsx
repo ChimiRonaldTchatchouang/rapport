@@ -1,34 +1,34 @@
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-type Tone = "neutral" | "success" | "warning" | "danger" | "brand" | "info";
+const badgeVariants = cva(
+  "inline-flex items-center justify-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 transition",
+  {
+    variants: {
+      variant: {
+        default: "border-transparent bg-primary text-primary-foreground",
+        secondary: "border-transparent bg-secondary text-secondary-foreground",
+        destructive: "border-transparent bg-destructive text-destructive-foreground",
+        outline: "text-foreground",
+        success: "border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+        warning: "border-transparent bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+      },
+    },
+    defaultVariants: { variant: "default" },
+  }
+);
 
-const tones: Record<Tone, string> = {
-  neutral: "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300",
-  success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
-  warning: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
-  danger: "bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300",
-  brand: "bg-brand-100 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300",
-  info: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
-};
-
-export function Badge({
-  tone = "neutral",
+function Badge({
   className,
-  children,
-}: {
-  tone?: Tone;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
-        tones[tone],
-        className
-      )}
-    >
-      {children}
-    </span>
-  );
+  variant,
+  asChild = false,
+  ...props
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot : "span";
+  return <Comp className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
+
+export { Badge, badgeVariants };
